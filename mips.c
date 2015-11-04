@@ -10,21 +10,7 @@
 
 uint8_t *memory;
 uint32_t *registers;
-
-void execute_syscall(uint32_t service) {
-    switch(service) {
-        // print integer
-        case 1:
-            printf("%d", registers[R_A0]);
-            break;
-        // print string
-        case 4:
-            printf("%s", (char *) &(memory[registers[R_A0]]));
-            break;
-        default:
-            printf("Syscall 0x%02x unimplemented\n", service);
-    }
-}
+uint32_t pc;
 
 static inline void r_inst(uint32_t inst, uint8_t *rs, uint8_t *rt, uint8_t *rd, uint8_t *shamt, uint8_t *funct) {
     *rs = (uint8_t) ((inst >> 21) & 0b11111);
@@ -40,7 +26,7 @@ static inline void i_inst(uint32_t inst, uint8_t *rs, uint8_t *rt, uint16_t *imm
     *immediate = (uint16_t) (inst & 0xffff);
 }
 
-static inline void j_inst(uint32_t inst, uint32_t pc, uint32_t *address) {
+static inline void j_inst(uint32_t inst, uint32_t *address) {
     *address = (pc & 0xf0000000) | ((inst & 0x3ffffff) << 2);
 }
 
@@ -52,7 +38,25 @@ static inline uint32_t __bswap_32(uint32_t x) {
     return (__bswap_16(x&0xffff)<<16) | (__bswap_16(x>>16));
 }
 
+int execute_syscall(uint32_t service) {
+    switch(service) {
+        // print integer
+        case 1:
+            printf("%d", registers[R_A0]);
+            break;
+        // print string
+        case 4:
+            printf("%s", (char *) &(memory[registers[R_A0]]));
+            break;
+        default:
+            printf("Syscall 0x%02x unimplemented\n", service);
+            return -1;
+    }
+    return 0;
+}
+
 void print_registers() {
+    printf("Registers:\n");
     printf("$0  0x%08x   $t0 0x%08x   $s0 0x%08x   $t8 0x%08x\n", registers[R_ZERO], registers[R_T0], registers[R_S0], registers[R_T8]);
     printf("$at 0x%08x   $t1 0x%08x   $s1 0x%08x   $t9 0x%08x\n", registers[R_AT], registers[R_T1], registers[R_S1], registers[R_T9]);
     printf("$v0 0x%08x   $t2 0x%08x   $s2 0x%08x   $k0 0x%08x\n", registers[R_V0], registers[R_T2], registers[R_S2], registers[R_K0]);
@@ -90,13 +94,20 @@ int main(int argc, char *argv[]) {
 
     uint32_t cycle_counter = INTERRUPT_PERIOD;
     // start of text segment
-    uint32_t pc = 0x00400000;
+    pc = 0x00400000;
 
     int8_t exit_code = 0;
 
     bool emulator_running = true;
     while(emulator_running) {
+        if(pc >= EMULATED_MEMORY) {
+            printf("\nMachine crash! Segmentation fault!\n");
+            printf("PC: 0x%08x\n", pc);
+            printf("Emulated memory size: 0x%08x\n\n", EMULATED_MEMORY);
+            break;
+        }
         uint32_t instruction = __bswap_32(*((uint32_t*) &(memory[pc])));
+        //uint32_t instruction = *((uint32_t*) &(memory[pc]));
         pc += 4;
 
         uint8_t opcode = (uint8_t) (instruction >> 26);
@@ -157,11 +168,14 @@ int main(int argc, char *argv[]) {
                         }
                         emulator_running = false;
                     } else {
-                        execute_syscall(registers[R_V0]);
+                        if(execute_syscall(registers[R_V0])) {
+                            printf("Instruction: 0x%08x\n", instruction);
+                        }
                     }
                     break;
                 default:
                     printf("Secondary opcode 0x%02x unimplemented\n", funct);
+                    printf("Instruction: 0x%08x\n", instruction);
             }
         } else {
             if(opcode == OP_J || opcode == OP_JAL) {
@@ -185,13 +199,13 @@ int main(int argc, char *argv[]) {
                         break;
                     default:
                         printf("Opcode 0x%02x unimplemented\n", opcode);
+                        printf("Instruction: 0x%08x\n", instruction);
                 }
             }
         }
     }
 
     cleanup:
-    printf("Registers:\n");
     print_registers();
     free(memory);
     free(registers);
