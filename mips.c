@@ -24,24 +24,42 @@ static inline uint8_t *physical_addr(register uint32_t virtual_addr) {
     return &memory_pages[virtual_addr >> 12][virtual_addr & 0xFFF];
 }
 
+static inline uint32_t read_reg(register uint8_t reg) {
+    return registers[reg];
+}
+
+static inline void write_reg(register uint8_t reg, register uint32_t word) {
+    if(reg) {
+        registers[reg] = word;
+    }
+}
+
 uint32_t readWord(register uint32_t addr) {
     uint32_t page_num = (addr >> 12);
-    if(!memory_pages[page_num]) {
+    uint16_t offset = addr & 0xFFF;
+    if(page_num > NUM_PAGES || !memory_pages[page_num]) {
         printf("\nMachine crash! Segmentation fault!\n");
         printf("Illegal access at address 0x%08x\n", addr);
         printf("PC: 0x%08x\n", pc);
         exit(1);
+    } else if (offset % 4) {
+        printf("\nUnaligned word read at address 0x%08x\n", addr);
+        printf("PC: 0x%08x\n", pc);
+        exit(1);
     }
-    return *((uint32_t*)(&memory_pages[page_num][addr & 0xFFF]));
+    return *((uint32_t*)(&memory_pages[page_num][offset]));
 }
 
-void writeMemory(register uint32_t addr, void *data, uint32_t len) {
+static inline void allocate_page(uint32_t page_num) {
+    if(!memory_pages[page_num]) {
+        memory_pages[page_num] = malloc(PAGE_SIZE);
+    }
+}
+
+void writeMemory(register uint32_t addr, register void *data, register uint32_t len) {
     for(int i = 0; i < len; i += PAGE_SIZE) {
         uint32_t page_num = (addr >> 12);
-        if(!memory_pages[page_num]) {
-            memory_pages[page_num] = malloc(PAGE_SIZE);
-            printf("Allocating 4kB page #%d at address 0x%08x, %d allocated total\n", page_num, addr + i, ++pages_allocated); 
-        }
+        allocate_page(page_num);
         if(len - i < PAGE_SIZE) {
             memcpy(memory_pages[page_num], &(((uint8_t*)data)[i]), len - i);
         } else {
@@ -50,8 +68,16 @@ void writeMemory(register uint32_t addr, void *data, uint32_t len) {
     }
 }
 
-void writeWord(uint32_t addr, uint32_t word) {
-    writeMemory(addr, &word, sizeof(word));
+void writeWord(register uint32_t addr, register uint32_t word) {
+    if(addr % 4) {
+        printf("\nUnaligned word write at address 0x%08x\n", addr);
+        printf("PC: 0x%08x\n", pc);
+        exit(1);
+    }
+    uint32_t page_num = (addr >> 12);
+    uint16_t offset = (addr & 0xFFF);
+    allocate_page(page_num);
+    *((uint32_t*)&(memory_pages[page_num][offset])) = word;
 }
 
 static inline void r_inst(uint32_t inst, uint8_t *rs, uint8_t *rt, uint8_t *rd, uint8_t *shamt, uint8_t *funct) {
@@ -156,48 +182,48 @@ int main(int argc, char *argv[]) {
             r_inst(instruction, &rs, &rt, &rd, &shamt, &funct);
             switch(funct) {
                 case OP0_SLLV:
-                    shamt = (uint8_t) (registers[rs] & 0b11111);
+                    shamt = (uint8_t) (read_reg(rs) & 0b11111);
                 case OP0_SLL:
-                    registers[rd] = registers[rt] << shamt;
+                    write_reg(rd, read_reg(rt) << shamt);
                     break;
                 case OP0_SRLV:
-                    shamt = (uint8_t) (registers[rs] & 0b11111);
+                    shamt = (uint8_t) (read_reg(rs) & 0b11111);
                 case OP0_SRL:
-                    registers[rd] = registers[rt] >> shamt;
+                    write_reg(rd, read_reg(rt) >> shamt);
                     break;
                 case OP0_SRAV:
-                    shamt = (uint8_t) (registers[rs] & 0b11111);
+                    shamt = (uint8_t) (read_reg(rs) & 0b11111);
                 case OP0_SRA:
-                    registers[rd] = (uint32_t) (((int32_t) registers[rt]) >> shamt);
+                    write_reg(rd, (uint32_t) (((int32_t) read_reg(rt)) >> shamt));
                     break;
                 case OP0_JALR:
-                    registers[R_RA] = pc + 4;
+                    write_reg(R_RA, pc + 4);
                 case OP0_JR:
-                    pc = registers[rs];
+                    pc = read_reg(rs);
                     break;
                 case OP0_ADD:
-                    registers[rd] = (uint32_t) ((int32_t) registers[rs] + (int32_t) registers[rt]);
+                    write_reg(rd, (uint32_t) ((int32_t) registers[rs] + (int32_t) registers[rt]));
                     break;
                 case OP0_ADDU:
-                    registers[rd] = registers[rs] + registers[rt];
+                    write_reg(rd, read_reg(rs) + read_reg(rt));
                     break;
                 case OP0_SUB:
-                    registers[rd] = (uint32_t) ((int32_t) registers[rs] - (int32_t) registers[rt]);
+                    write_reg(rd, (uint32_t) ((int32_t) registers[rs] - (int32_t) registers[rt]));
                     break;
                 case OP0_SUBU:
-                    registers[rd] = registers[rs] - registers[rt];
+                    write_reg(rd, read_reg(rs) - read_reg(rt));
                     break;
                 case OP0_AND:
-                    registers[rd] = registers[rs] & registers[rt];
+                    write_reg(rd, read_reg(rs) & read_reg(rt));
                     break;
                 case OP0_OR:
-                    registers[rd] = registers[rs] | registers[rt];
+                    write_reg(rd, read_reg(rs) | read_reg(rt));
                     break;
                 case OP0_XOR:
-                    registers[rd] = registers[rs] ^ registers[rt];
+                    write_reg(rd, read_reg(rs) ^ read_reg(rt));
                     break;
                 case OP0_NOR:
-                    registers[rd] = ~(registers[rs] | registers[rt]);
+                    write_reg(rd, ~(read_reg(rs) | read_reg(rt)));
                     break;
                 case OP0_SYSCALL:
                     if(registers[R_V0] == 10 || registers[R_V0] == 17) {
@@ -224,19 +250,19 @@ int main(int argc, char *argv[]) {
                 i_inst(instruction, &rs, &rt, &immediate);
                 switch(opcode) {
                     case OP_LUI:
-                        registers[rt] = ((uint32_t) immediate) << 16;
+                        write_reg(rt, ((uint32_t) immediate) << 16);
                         break;
                     case OP_ORI:
-                        registers[rt] = registers[rs] | immediate;
+                        write_reg(rt, read_reg(rs) | immediate);
                         break;
                     case OP_LW:
                         //registers[rt] = memory[(int32_t) registers[rs] + (int16_t) immediate];
-                        registers[rt] = readWord((int32_t) registers[rs] + (int16_t) immediate);
+                        write_reg(rt, readWord((int32_t) read_reg(rs) + (int16_t) immediate));
                         break;
                     case OP_SW:
                         //memory[(int32_t) registers[rs] + (int16_t) immediate] = registers[rt];
                         //registers[rt] = readWord((int32_t) registers[rs] + (int16_t) immediate);
-                        writeWord((int32_t) registers[rs] + (int16_t) immediate, registers[rt]);
+                        writeWord((int32_t) read_reg(rs) + (int16_t) immediate, read_reg(rt));
                         break;
                     default:
                         printf("Opcode 0x%02x unimplemented\n", opcode);
