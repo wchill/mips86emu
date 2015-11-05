@@ -7,10 +7,52 @@
 
 #define INTERRUPT_PERIOD 10000
 #define EMULATED_MEMORY 64 * 1024 * 1024
+#define PAGE_SIZE 4096
+#define NUM_PAGES (4294967296UL / PAGE_SIZE)
+#define MEMORY_RESERVED 0
+#define MEMORY_TEXT 0x04000000
+#define MEMORY_STATIC 0x10000000
+#define MEMORY_STACK 0x7FFFFFFF
 
 uint8_t *memory;
+uint8_t **memory_pages;
+uint32_t pages_allocated;
 uint32_t *registers;
 uint32_t pc;
+
+static inline uint8_t *physical_addr(register uint32_t virtual_addr) {
+    return &memory_pages[virtual_addr >> 12][virtual_addr & 0xFFF];
+}
+
+uint32_t readWord(register uint32_t addr) {
+    uint32_t page_num = (addr >> 12);
+    if(!memory_pages[page_num]) {
+        printf("\nMachine crash! Segmentation fault!\n");
+        printf("Illegal access at address 0x%08x\n", addr);
+        printf("PC: 0x%08x\n", pc);
+        exit(1);
+    }
+    return *((uint32_t*)(&memory_pages[page_num][addr & 0xFFF]));
+}
+
+void writeMemory(register uint32_t addr, void *data, uint32_t len) {
+    for(int i = 0; i < len; i += PAGE_SIZE) {
+        uint32_t page_num = (addr >> 12);
+        if(!memory_pages[page_num]) {
+            memory_pages[page_num] = malloc(PAGE_SIZE);
+            printf("Allocating 4kB page #%d at address 0x%08x, %d allocated total\n", page_num, addr + i, ++pages_allocated); 
+        }
+        if(len - i < PAGE_SIZE) {
+            memcpy(memory_pages[page_num], &(((uint8_t*)data)[i]), len - i);
+        } else {
+            memcpy(memory_pages[page_num], &(((uint8_t*)data)[i]), PAGE_SIZE);
+        }
+    }
+}
+
+void writeWord(uint32_t addr, uint32_t word) {
+    writeMemory(addr, &word, sizeof(word));
+}
 
 static inline void r_inst(uint32_t inst, uint8_t *rs, uint8_t *rt, uint8_t *rd, uint8_t *shamt, uint8_t *funct) {
     *rs = (uint8_t) ((inst >> 21) & 0b11111);
@@ -46,7 +88,7 @@ int execute_syscall(uint32_t service) {
             break;
         // print string
         case 4:
-            printf("%s", (char *) &(memory[registers[R_A0]]));
+            printf("%s", physical_addr(registers[R_A0]));
             break;
         default:
             printf("Syscall 0x%02x unimplemented\n", service);
@@ -78,9 +120,8 @@ int main(int argc, char *argv[]) {
         printf("Error opening file: %s\n", argv[1]);
         return 1;
     }
-    
-    memory = malloc(sizeof(*memory) * EMULATED_MEMORY);
-    memset(memory, 0, EMULATED_MEMORY);
+    memory_pages = malloc(sizeof(*memory_pages) * NUM_PAGES);
+    memset(memory_pages, 0, sizeof(*memory_pages) * NUM_PAGES);
 
     registers = malloc(sizeof(*registers) * 32);
     memset(registers, 0, 32 * sizeof(*registers));
@@ -89,24 +130,21 @@ int main(int argc, char *argv[]) {
     fseek(file,0,SEEK_END);
     off_t file_size = ftell(file);
     fseek(file,0,SEEK_SET);
-    off_t bytesRead = fread(memory + 0x00400000, 1, file_size, file);
+    void *buf = malloc(sizeof(uint8_t) * file_size);
+    off_t bytesRead = fread(buf, 1, file_size, file);
     fclose(file);
+    writeMemory(MEMORY_TEXT, buf, file_size);
+    free(buf);
 
     uint32_t cycle_counter = INTERRUPT_PERIOD;
     // start of text segment
-    pc = 0x00400000;
+    pc = MEMORY_TEXT;
 
     int8_t exit_code = 0;
 
     bool emulator_running = true;
     while(emulator_running) {
-        if(pc >= EMULATED_MEMORY) {
-            printf("\nMachine crash! Segmentation fault!\n");
-            printf("PC: 0x%08x\n", pc);
-            printf("Emulated memory size: 0x%08x\n\n", EMULATED_MEMORY);
-            break;
-        }
-        uint32_t instruction = __bswap_32(*((uint32_t*) &(memory[pc])));
+        uint32_t instruction = __bswap_32(readWord(pc));
         //uint32_t instruction = *((uint32_t*) &(memory[pc]));
         pc += 4;
 
@@ -192,10 +230,13 @@ int main(int argc, char *argv[]) {
                         registers[rt] = registers[rs] | immediate;
                         break;
                     case OP_LW:
-                        registers[rt] = memory[(int32_t) registers[rs] + (int16_t) immediate];
+                        //registers[rt] = memory[(int32_t) registers[rs] + (int16_t) immediate];
+                        registers[rt] = readWord((int32_t) registers[rs] + (int16_t) immediate);
                         break;
                     case OP_SW:
-                        memory[(int32_t) registers[rs] + (int16_t) immediate] = registers[rt];
+                        //memory[(int32_t) registers[rs] + (int16_t) immediate] = registers[rt];
+                        //registers[rt] = readWord((int32_t) registers[rs] + (int16_t) immediate);
+                        writeWord((int32_t) registers[rs] + (int16_t) immediate, registers[rt]);
                         break;
                     default:
                         printf("Opcode 0x%02x unimplemented\n", opcode);
@@ -207,7 +248,12 @@ int main(int argc, char *argv[]) {
 
     cleanup:
     print_registers();
-    free(memory);
+    for(int i = 0; i < NUM_PAGES; i++) {
+        if(memory_pages[i]) {
+            free(memory_pages[i]);
+        }
+    }
+    free(memory_pages);
     free(registers);
 
     return exit_code;
