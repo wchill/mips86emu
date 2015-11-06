@@ -14,7 +14,6 @@
 #define MEMORY_STATIC 0x10000000
 #define MEMORY_STACK 0x7FFFFFFF
 
-uint8_t *memory;
 uint8_t **memory_pages;
 uint32_t pages_allocated;
 uint32_t *registers;
@@ -42,7 +41,7 @@ uint32_t readWord(register uint32_t addr) {
         printf("Illegal access at address 0x%08x\n", addr);
         printf("PC: 0x%08x\n", pc);
         exit(1);
-    } else if (offset % 4) {
+    } else if (addr & ADDR_ALIGN_MASK) {
         printf("\nUnaligned word read at address 0x%08x\n", addr);
         printf("PC: 0x%08x\n", pc);
         exit(1);
@@ -69,7 +68,7 @@ void writeMemory(register uint32_t addr, register void *data, register uint32_t 
 }
 
 void writeWord(register uint32_t addr, register uint32_t word) {
-    if(addr % 4) {
+    if(addr & ADDR_ALIGN_MASK) {
         printf("\nUnaligned word write at address 0x%08x\n", addr);
         printf("PC: 0x%08x\n", pc);
         exit(1);
@@ -94,8 +93,8 @@ static inline void i_inst(uint32_t inst, uint8_t *rs, uint8_t *rt, uint16_t *imm
     *immediate = (uint16_t) (inst & 0xffff);
 }
 
-static inline void j_inst(uint32_t inst, uint32_t *address) {
-    *address = (pc & 0xf0000000) | ((inst & 0x3ffffff) << 2);
+static inline uint32_t j_inst(register uint32_t inst) {
+    return (pc & 0xf0000000) | ((inst & 0x3ffffff) << 2);
 }
 
 static inline uint16_t __bswap_16(uint16_t x) {
@@ -157,12 +156,12 @@ int main(int argc, char *argv[]) {
     off_t file_size = ftell(file);
     fseek(file,0,SEEK_SET);
     void *buf = malloc(sizeof(uint8_t) * file_size);
-    off_t bytesRead = fread(buf, 1, file_size, file);
+    fread(buf, 1, file_size, file);
     fclose(file);
     writeMemory(MEMORY_TEXT, buf, file_size);
     free(buf);
 
-    uint32_t cycle_counter = INTERRUPT_PERIOD;
+    // uint32_t cycle_counter = INTERRUPT_PERIOD;
     // start of text segment
     pc = MEMORY_TEXT;
 
@@ -243,7 +242,13 @@ int main(int argc, char *argv[]) {
             }
         } else {
             if(opcode == OP_J || opcode == OP_JAL) {
-                printf("Opcode 0x%02x unimplemented\n", opcode);
+                uint32_t imm_addr = j_inst(instruction);
+                if(opcode == OP_JAL) {
+                    write_reg(R_RA, pc);
+                }
+                pc = imm_addr;
+                // Should a no-op be inserted here?
+                // printf("Opcode 0x%02x unimplemented\n", opcode);
             } else {
                 uint8_t rs, rt;
                 uint16_t immediate;
@@ -272,7 +277,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    cleanup:
+    // cleanup
     print_registers();
     for(int i = 0; i < NUM_PAGES; i++) {
         if(memory_pages[i]) {

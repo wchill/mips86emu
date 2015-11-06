@@ -5,4 +5,4 @@ clean:
 
 bin/mips86emu: mips.c
 	mkdir -p bin
-	gcc mips.c -g -o bin/mips86emu
+	gcc mips.c -g -O3 -Wall -o bin/mips86emu
