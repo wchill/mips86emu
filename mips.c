@@ -10,7 +10,7 @@
 #define PAGE_SIZE 4096
 #define NUM_PAGES (4294967296UL / PAGE_SIZE)
 #define MEMORY_RESERVED 0
-#define MEMORY_TEXT 0x04000000
+#define MEMORY_TEXT 0x00400000
 #define MEMORY_STATIC 0x10000000
 #define MEMORY_STACK 0x7FFFFFFF
 
@@ -19,8 +19,18 @@ uint32_t pages_allocated;
 uint32_t *registers;
 uint32_t pc;
 
+void cleanup(int exit_code);
+
+static inline uint32_t sign_extend_imm16(register uint16_t immediate) {
+    return (uint32_t) (0xFFFF0000 * (immediate >> 15) + immediate);
+}
+
+static inline uint32_t virtual_addr_to_page_num(register uint32_t virtual_addr) {
+    return virtual_addr >> 12;
+}
+
 static inline uint8_t *physical_addr(register uint32_t virtual_addr) {
-    return &memory_pages[virtual_addr >> 12][virtual_addr & 0xFFF];
+    return &(memory_pages[virtual_addr_to_page_num(virtual_addr)][virtual_addr & 0xFFF]);
 }
 
 static inline uint32_t read_reg(register uint8_t reg) {
@@ -34,30 +44,31 @@ static inline void write_reg(register uint8_t reg, register uint32_t word) {
 }
 
 uint32_t readWord(register uint32_t addr) {
-    uint32_t page_num = (addr >> 12);
+    uint32_t page_num = virtual_addr_to_page_num(addr);
     uint16_t offset = addr & 0xFFF;
     if(page_num > NUM_PAGES || !memory_pages[page_num]) {
         printf("\nMachine crash! Segmentation fault!\n");
         printf("Illegal access at address 0x%08x\n", addr);
         printf("PC: 0x%08x\n", pc);
-        exit(1);
-    } else if (addr & ADDR_ALIGN_MASK) {
+        cleanup(1);
+    } else if (addr & ~ADDR_ALIGN_MASK) {
         printf("\nUnaligned word read at address 0x%08x\n", addr);
         printf("PC: 0x%08x\n", pc);
-        exit(1);
+        cleanup(1);
     }
     return *((uint32_t*)(&memory_pages[page_num][offset]));
 }
 
 static inline void allocate_page(uint32_t page_num) {
     if(!memory_pages[page_num]) {
+        printf("Allocating new page %d\n", page_num);
         memory_pages[page_num] = malloc(PAGE_SIZE);
     }
 }
 
 void writeMemory(register uint32_t addr, register void *data, register uint32_t len) {
     for(int i = 0; i < len; i += PAGE_SIZE) {
-        uint32_t page_num = (addr >> 12);
+        uint32_t page_num = virtual_addr_to_page_num(addr + i);
         allocate_page(page_num);
         if(len - i < PAGE_SIZE) {
             memcpy(memory_pages[page_num], &(((uint8_t*)data)[i]), len - i);
@@ -68,12 +79,12 @@ void writeMemory(register uint32_t addr, register void *data, register uint32_t 
 }
 
 void writeWord(register uint32_t addr, register uint32_t word) {
-    if(addr & ADDR_ALIGN_MASK) {
+    if(addr & ~ADDR_ALIGN_MASK) {
         printf("\nUnaligned word write at address 0x%08x\n", addr);
         printf("PC: 0x%08x\n", pc);
-        exit(1);
+        cleanup(1);
     }
-    uint32_t page_num = (addr >> 12);
+    uint32_t page_num = virtual_addr_to_page_num(addr);
     uint16_t offset = (addr & 0xFFF);
     allocate_page(page_num);
     *((uint32_t*)&(memory_pages[page_num][offset])) = word;
@@ -134,6 +145,20 @@ void print_registers() {
     printf("$a3 0x%08x   $t7 0x%08x   $s7 0x%08x   $ra 0x%08x\n", registers[R_A3], registers[R_T7], registers[R_S7], registers[R_RA]);
 }
 
+void cleanup(int exit_code) {
+    // cleanup
+    print_registers();
+    for(int i = 0; i < NUM_PAGES; i++) {
+        if(memory_pages[i]) {
+            free(memory_pages[i]);
+        }
+    }
+    free(memory_pages);
+    free(registers);
+    printf("Exiting with code %d\n", exit_code);
+    exit(exit_code);
+}
+
 int main(int argc, char *argv[]) {
     if(argc < 2) {
         printf("Usage: mips86emu program.hex\n");
@@ -155,22 +180,26 @@ int main(int argc, char *argv[]) {
     fseek(file,0,SEEK_END);
     off_t file_size = ftell(file);
     fseek(file,0,SEEK_SET);
-    void *buf = malloc(sizeof(uint8_t) * file_size);
+    void *buf = malloc(sizeof(uint8_t) * (file_size));
     fread(buf, 1, file_size, file);
     fclose(file);
     writeMemory(MEMORY_TEXT, buf, file_size);
     free(buf);
+    printf("Program loaded (%lld bytes)\n", file_size);
 
     // uint32_t cycle_counter = INTERRUPT_PERIOD;
     // start of text segment
-    pc = MEMORY_TEXT;
+    // temporarily set to 0x400018 until I figure out the ELF format
+    pc = MEMORY_TEXT + 24;
 
     int8_t exit_code = 0;
 
     bool emulator_running = true;
     while(emulator_running) {
+        //convert big endian to little endian
         uint32_t instruction = __bswap_32(readWord(pc));
-        //uint32_t instruction = *((uint32_t*) &(memory[pc]));
+        //printf("Executing instruction 0x%08x @ 0x%08x\n", instruction, pc);
+        //uint32_t instruction = readWord(pc);
         pc += 4;
 
         uint8_t opcode = (uint8_t) (instruction >> 26);
@@ -254,6 +283,9 @@ int main(int argc, char *argv[]) {
                 uint16_t immediate;
                 i_inst(instruction, &rs, &rt, &immediate);
                 switch(opcode) {
+                    case OP_ADDIU:
+                        write_reg(rt, read_reg(rs) + sign_extend_imm16(immediate));
+                        break;
                     case OP_LUI:
                         write_reg(rt, ((uint32_t) immediate) << 16);
                         break;
@@ -277,15 +309,5 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // cleanup
-    print_registers();
-    for(int i = 0; i < NUM_PAGES; i++) {
-        if(memory_pages[i]) {
-            free(memory_pages[i]);
-        }
-    }
-    free(memory_pages);
-    free(registers);
-
-    return exit_code;
+    cleanup(exit_code);
 }
