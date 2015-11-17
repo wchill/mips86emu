@@ -17,6 +17,8 @@
 uint8_t **memory_pages;
 uint32_t pages_allocated;
 uint32_t *registers;
+uint32_t register_hi;
+uint32_t register_lo;
 uint32_t pc;
 
 void cleanup(int exit_code);
@@ -35,6 +37,30 @@ static inline uint8_t *physical_addr(register uint32_t virtual_addr) {
 
 static inline uint32_t read_reg(register uint8_t reg) {
     return registers[reg];
+}
+
+static inline int32_t read_reg_signed(register uint8_t reg) {
+    return (int32_t) registers[reg];
+}
+
+static inline uint32_t read_reg_unsigned(register uint8_t reg) {
+    return (uint32_t) registers[reg];
+}
+
+static inline uint32_t read_hi_reg() {
+    return register_hi;
+}
+
+static inline uint32_t read_lo_reg() {
+    return register_lo;
+}
+
+static inline void write_hi_reg(register uint32_t word) {
+    register_hi = word;
+}
+
+static inline void write_lo_reg(register uint32_t word) {
+    register_lo = word;
 }
 
 static inline void write_reg(register uint8_t reg, register uint32_t word) {
@@ -200,7 +226,6 @@ int main(int argc, char *argv[]) {
         uint32_t instruction = __bswap_32(readWord(pc));
         //printf("Executing instruction 0x%08x @ 0x%08x\n", instruction, pc);
         //uint32_t instruction = readWord(pc);
-        pc += 4;
 
         uint8_t opcode = (uint8_t) (instruction >> 26);
 
@@ -253,6 +278,48 @@ int main(int argc, char *argv[]) {
                 case OP0_NOR:
                     write_reg(rd, ~(read_reg(rs) | read_reg(rt)));
                     break;
+                case OP0_MFHI:
+                    write_reg(rd, read_hi_reg());
+                    break;
+                case OP0_MFLO:
+                    write_reg(rd, read_lo_reg());
+                    break;
+                case OP0_MTHI:
+                    write_hi_reg(read_reg(rs));
+                    break;
+                case OP0_MTLO:
+                    write_lo_reg(read_reg(rs));
+                    break;
+/*
+                case OP0_MULT:
+                    uint64_t dword_one = (uint64_t) (((int64_t) read_reg(rs)) * ((int64_t) read_reg(rt)));
+                    write_hi_reg((uint32_t) (dword_one >> 32));
+                    write_lo_reg((uint32_t) (dword_one & 0xFFFFFFFF));
+                    break;
+                case OP0_MULTU:
+                    uint64_t dword_two = ((uint64_t) read_reg(rs)) * ((uint64_t) read_reg(rt));
+                    write_hi_reg((uint32_t) (dword_two >> 32));
+                    write_lo_reg((uint32_t) (dword_two & 0xFFFFFFFF));
+                    break;
+                case OP0_DIV:
+                    int32_t quotient_signed = ((int32_t) read_reg(rs)) / ((int32_t) read_reg(rt));
+                    int32_t remainder_signed = ((int32_t) read_reg(rs)) % ((int32_t) read_reg(rt));
+                    write_lo_reg((uint32_t) quotient_signed);
+                    write_hi_reg((uint32_t) remainder_signed);
+                    break;
+                case OP0_DIVU:
+                    uint32_t quotient = ((uint32_t) read_reg(rs)) / ((uint32_t) read_reg(rt));
+                    uint32_t remainder = ((uint32_t) read_reg(rs)) % ((uint32_t) read_reg(rt));
+                    write_lo_reg((uint32_t) quotient);
+                    write_hi_reg((uint32_t) remainder);
+                    break;
+*/
+                case OP0_SLT:
+                    write_reg(rd, ((int32_t) read_reg(rs)) < ((int32_t) read_reg(rt)));
+                    break;
+                case OP0_SLTU:
+                    write_reg(rd, ((uint32_t) read_reg(rs)) < ((uint32_t) read_reg(rt)));
+                    break;
                 case OP0_SYSCALL:
                     if(registers[R_V0] == 10 || registers[R_V0] == 17) {
                         if(registers[R_V0] == 17) {
@@ -265,6 +332,10 @@ int main(int argc, char *argv[]) {
                         }
                     }
                     break;
+                case OP0_BREAK:
+                    printf("BREAK at address 0x%08x\n", pc);
+                    printf("Press enter to continue...\n");
+                    getchar();
                 default:
                     printf("Secondary opcode 0x%02x unimplemented\n", funct);
                     printf("Instruction: 0x%08x\n", instruction);
@@ -307,6 +378,7 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+        pc += 4;
     }
 
     cleanup(exit_code);
