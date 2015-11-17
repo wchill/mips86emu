@@ -1,3 +1,21 @@
+#ifndef MIPS_HEADER
+#define MIPS_HEADER
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#define INTERRUPT_PERIOD 10000
+#define EMULATED_MEMORY 64 * 1024 * 1024
+#define PAGE_SIZE 4096
+#define NUM_PAGES (4294967296UL / PAGE_SIZE)
+#define MEMORY_RESERVED 0
+#define MEMORY_TEXT 0x00400000
+#define MEMORY_STATIC 0x10000000
+#define MEMORY_STACK 0x7FFFFFFF
+
+extern uint32_t pc;
+extern bool emulator_running;
+
 /*****************************************************************
 *                                                                *
 *    MIPS Defines: Numerical parameters of the MIPS processor    *
@@ -263,3 +281,5 @@
 #define EX_FPE    0x15
 #define EX_WATCH  0x23
 #define EX_VCED   0x31
+
+#endif
