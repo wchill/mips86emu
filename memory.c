@@ -52,6 +52,25 @@ void write_word(uint32_t addr, uint32_t word) {
     *((uint32_t*)&(memory_pages[page_num][offset])) = word;
 }
 
+uint8_t read_byte(uint32_t addr) {
+    uint32_t page_num = get_page_num(addr);
+    uint16_t offset = addr & 0xFFF;
+    if(page_num > NUM_PAGES || !memory_pages[page_num]) {
+        printf("\nMachine crash! Segmentation fault!\n");
+        printf("Illegal access at address 0x%08x\n", addr);
+        printf("PC: 0x%08x\n", pc);
+        //cleanup(1);
+    }
+    return *((uint8_t*)(&memory_pages[page_num][offset]));
+}
+
+void write_byte(uint32_t addr, uint8_t data) {
+    uint32_t page_num = get_page_num(addr);
+    uint16_t offset = (addr & 0xFFF);
+    allocate_page(page_num);
+    *((uint8_t*)(&memory_pages[page_num][offset])) = data;
+}
+
 void write_memory(uint32_t addr, void *data, uint32_t len) {
     for(int i = 0; i < len; i += PAGE_SIZE) {
         uint32_t page_num = get_page_num(addr + i);

@@ -1,6 +1,7 @@
 #ifndef MIPS_REGISTERS
 #define MIPS_REGISTERS
 
+#include <stdio.h>
 #include "mips.h"
 
 uint32_t mips_registers[32];

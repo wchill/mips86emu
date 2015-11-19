@@ -21,6 +21,8 @@ static inline uint8_t *get_physical_addr(uint32_t virtual_addr) {
 void allocate_page(uint32_t page);
 uint32_t read_word(uint32_t addr);
 void write_word(uint32_t addr, uint32_t word);
+uint8_t read_byte(uint32_t addr);
+void write_byte(uint32_t addr, uint8_t data);
 void write_memory(uint32_t addr, void *data, uint32_t len);
 
 #endif

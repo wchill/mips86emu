@@ -7,9 +7,12 @@
 #include "memory.h"
 #include "register.h"
 #include "instructions.h"
+#include "cop0.h"
+#include "cop1.h"
 
 uint32_t pc = MEMORY_TEXT;
 bool emulator_running = false;
+bool branch_taken = false;
 
 void cleanup(int exit_code);
 
@@ -46,6 +49,8 @@ void cleanup(int exit_code) {
     // cleanup
     print_registers();
     memory_cleanup();
+    cop0_cleanup();
+    cop1_cleanup();
     //free(registers);
     printf("Exiting with code %d\n", exit_code);
     exit(exit_code);
@@ -62,13 +67,13 @@ int main(int argc, char *argv[]) {
         printf("Error opening file: %s\n", argv[1]);
         return 1;
     }
-
-    //registers = malloc(sizeof(*registers) * 32);
-    //memset(registers, 0, 32 * sizeof(*registers));
     
     memory_init();
-    write_reg(R_SP, EMULATED_MEMORY);
-    //registers[R_SP] = (uint32_t) (EMULATED_MEMORY);
+    write_reg(R_SP, STACK_TOP);
+    write_reg(R_GP, DYNAMIC_BOTTOM);
+
+    cop0_init();
+    cop1_init();
 
     fseek(file,0,SEEK_END);
     off_t file_size = ftell(file);
@@ -89,10 +94,10 @@ int main(int argc, char *argv[]) {
     emulator_running = true;
 
     while(emulator_running) {
+        branch_taken = false;
         //convert big endian to little endian
         uint32_t instruction = __bswap_32(read_word(pc));
-        //printf("Executing instruction 0x%08x @ 0x%08x\n", instruction, pc);
-        //uint32_t instruction = readWord(pc);
+        //uint32_t instruction = read_word(pc);
 
         uint8_t opcode = (uint8_t) (instruction >> 26);
 
@@ -104,15 +109,16 @@ int main(int argc, char *argv[]) {
         } else if(opcode == OP_J || opcode == OP_JAL) {
             uint32_t imm_addr = j_inst(instruction);
             if(opcode == OP_JAL) {
-                write_reg(R_RA, pc);
+                write_reg(R_RA, pc + 4);
             }
             pc = imm_addr;
+            branch_taken = true;
         } else {
             i_inst params;
             parse_i_inst(instruction, &params);
             (*i_inst_table[params.opcode])(params);
         }
-        pc += 4;
+        pc += 4 * !branch_taken;
     }
 
     cleanup(exit_code);

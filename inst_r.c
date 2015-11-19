@@ -141,12 +141,13 @@ void instr_break(r_inst params) {
 
 void instr_unimplemented_r(r_inst params) {
     printf("Secondary opcode 0x%02x unimplemented\n", params.funct);
-    printf("Instruction: 0x%08x\n", params.instruction);
+    printf("R-type instruction: 0x%08x @ 0x%08x\n", params.instruction, pc);
 }
 
 void instr_jump_and_link_reg(r_inst params) {
-    write_reg(R_RA, pc + 4);
+    uint32_t old_pc = pc + 4;
     instr_jump_reg(params);
+    write_reg(R_RA, old_pc);
 }
 
 void instr_jump_reg(r_inst params) {
@@ -164,7 +165,7 @@ int execute_syscall(uint32_t service) {
             printf("%s", get_physical_addr(read_reg_unsigned(R_A0)));
             break;
         default:
-            printf("Syscall 0x%02x unimplemented\n", service);
+            printf("Syscall 0x%02x unimplemented @ 0x%08x\n", service, pc);
             return -1;
     }
     return 0;

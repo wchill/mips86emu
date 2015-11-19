@@ -2,7 +2,6 @@
 #define MIPS_R_INST
 
 #include <stdint.h>
-#include "mips.h"
 
 typedef struct {
     uint32_t instruction;

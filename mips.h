@@ -4,16 +4,20 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define DEBUG
+
 #define INTERRUPT_PERIOD 10000
 #define EMULATED_MEMORY 64 * 1024 * 1024
+#define STACK_TOP 0x7FFFFFFC
+#define DYNAMIC_BOTTOM 0x10008000
 #define PAGE_SIZE 4096
 #define NUM_PAGES (4294967296UL / PAGE_SIZE)
 #define MEMORY_RESERVED 0
 #define MEMORY_TEXT 0x00400000
 #define MEMORY_STATIC 0x10000000
-#define MEMORY_STACK 0x7FFFFFFF
 
 extern uint32_t pc;
+extern bool branch_taken;
 extern bool emulator_running;
 
 /*****************************************************************
@@ -74,6 +78,9 @@ extern bool emulator_running;
 #define OP_Z1       0x11
 #define OP_Z2       0x12
 #define OP_Z3       0x13
+#define OP_SPECIAL2 0x1c
+#define OP_JALX     0x1d
+#define OP_SPECIAL3 0x1f
 #define OP_LB       0x20
 #define OP_LH       0x21
 #define OP_LWL      0x22
@@ -86,14 +93,18 @@ extern bool emulator_running;
 #define OP_SWL      0x2a
 #define OP_SW       0x2b
 #define OP_SWR      0x2e
-#define OP_LWC0     0x30
+#define OP_CACHE    0x2f
+#define OP_LL       0x30
 #define OP_LWC1     0x31
 #define OP_LWC2     0x32
-#define OP_LWC3     0x33
-#define OP_SWC0     0x38
+#define OP_PREF     0x33
+#define OP_LDC1     0x35
+#define OP_LDC2     0x36
+#define OP_SC       0x38
 #define OP_SWC1     0x39
 #define OP_SWC2     0x3a
-#define OP_SWC3     0x3b
+#define OP_SDC1     0x3d
+#define OP_SDC2     0x3e
 
 // Secondary opcodes (rs field; OP_Z[0-3])
 #define OPZ_MFCZ    0x00
