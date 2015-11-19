@@ -1,14 +1,16 @@
 #mips86emu
 
-A MIPS emulator written in C targeting x86.
+A MIPS emulator written in C (soon-to-be-C++) implementing the MIPS32 ISA.
 
-The goal is to have a fully working emulator with dynamic recompilation, memory mapped I/O for graphics/sound/networking, and the ability to have a full Linux kernel running in the emulator.
+The goal is to have a fully working emulator with dynamic recompilation to x86 assembly (hence the name), memory mapped I/O for graphics/sound/networking, and the ability to have a full Linux kernel running in the emulator.
+
+Many of the most useful instructions have already been implemented, along with a minimal implementation for coprocessors 0 and 1 (which currently do not provide any additional functionality).
 
 ##TODO:
+* Reimplement in C++ for modularity/maintainability reasons
 * Finish implementing opcodes
+* Finish implementing coprocessors
 * Finish implementing syscalls for bare metal assembly code
-* Refactor code to make it more modular
-* Implement proper register/memory access
 * Implement exceptions/interrupts
 * Write a basic assembler
 * Implement a just-in-time dynamic recompilation engine for faster execution

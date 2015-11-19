@@ -1,5 +1,6 @@
 EMULATOR = mips86emu
-OUTPUT = bin/$(EMULATOR)
+OUTPUT_DIR = bin
+OUTPUT = $(OUTPUT_DIR)/$(EMULATOR)
 
 CC = gcc
 WARNINGS = -Wall
@@ -8,7 +9,7 @@ CC_OPTS = -c -g -O0 -Wfatal-errors -Werror $(WARNINGS)
 all: $(OUTPUT)
 
 clean:
-	rm -rf $(OUTPUT) *.o
+	rm -rf bin *.o
 
 $(OUTPUT): emulator.o memory.o inst_r.o inst_i.o coprocessor.o cop0.o cop1.o
 	mkdir -p bin
