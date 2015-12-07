@@ -1,5 +1,6 @@
 .data
-hellostring:    .ascii "Hello World!\n\0"
+hellostring:    .ascii "Hacking...\n\0"
+hacked:    .ascii "Totally hacked ayy lmao\n\0"
 saved_ret_pc:   .word 0
 
 .text
@@ -8,6 +9,10 @@ main:
     sw $ra, saved_ret_pc
 
     la  $a0, hellostring
+    li  $v0, 4
+    syscall
+
+    la  $a0, hacked 
     li  $v0, 4
     syscall
 
