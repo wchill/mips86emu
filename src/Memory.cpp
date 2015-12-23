@@ -13,10 +13,7 @@ Memory::Memory(uint64_t max_memory) {
 }
 
 Memory::~Memory() {
-    for(int i = 0; i < max_pages; i++) {
-        delete[] memory_pages[i];
-        memory_pages[i] = NULL;
-    }
+    clear_memory();
     delete[] memory_pages;
     memory_pages = NULL;
 }
@@ -43,6 +40,14 @@ void Memory::allocate_page(unsigned int page) {
         //printf("Allocating new page %d\n", page_num);
         memory_pages[page] = new uint8_t[PAGE_SIZE]();
         allocated_pages++;
+    }
+}
+
+void Memory::clear_memory() {
+    allocated_pages = 0;
+    for(int i = 0; i < max_pages; i++) {
+        delete[] memory_pages[i];
+        memory_pages[i] = NULL;
     }
 }
 

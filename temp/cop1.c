@@ -1,5 +1,5 @@
 #include "cop1.h"
-#include "memory.h"
+#include "memory_old.h"
 
 void cop1_init() {
     mips_coprocessor *cop = malloc(sizeof(*cop));

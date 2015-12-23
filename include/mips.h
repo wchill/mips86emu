@@ -1,25 +1,6 @@
 #ifndef MIPS_HEADER
 #define MIPS_HEADER
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#define DEBUG
-
-#define INTERRUPT_PERIOD 10000
-#define EMULATED_MEMORY 64 * 1024 * 1024
-#define STACK_TOP 0x7FFFFFFC
-#define DYNAMIC_BOTTOM 0x10008000
-#define PAGE_SIZE 4096
-#define NUM_PAGES (4294967296UL / PAGE_SIZE)
-#define MEMORY_RESERVED 0
-#define MEMORY_TEXT 0x00400000
-#define MEMORY_STATIC 0x10000000
-
-extern uint32_t pc;
-extern bool branch_taken;
-extern bool emulator_running;
-
 /*****************************************************************
 *                                                                *
 *    MIPS Defines: Numerical parameters of the MIPS processor    *
@@ -32,9 +13,6 @@ extern bool emulator_running;
 
 // Mask for the coprocessor number from the opcode
 #define OP__ZMASK       0x03
-
-// Mask to force word-alignment of addresses
-#define ADDR_ALIGN_MASK 0xfffffffc
 
 // Mask particular bytes
 #define BYTE_0_MASK     0x000000ff
@@ -189,40 +167,6 @@ extern bool emulator_running;
 #define OPF_CNGEF   0x3d
 #define OPF_CLEF    0x3e
 #define OPF_CNGTF   0x3f
-
-// Registers
-#define R_ZERO      0   // Zero register
-#define R_AT        1   // Assembler temporary
-#define R_V0        2   // Function results/expression evaluation
-#define R_V1        3
-#define R_A0        4   // Arguments
-#define R_A1        5
-#define R_A2        6
-#define R_A3        7
-#define R_T0        8   // Temporaries
-#define R_T1        9
-#define R_T2        10
-#define R_T3        11
-#define R_T4        12
-#define R_T5        13
-#define R_T6        14
-#define R_T7        15
-#define R_S0        16  // Saved temporaries
-#define R_S1        17
-#define R_S2        18
-#define R_S3        19
-#define R_S4        20
-#define R_S5        21
-#define R_S6        22
-#define R_S7        23
-#define R_T8        24  // Temporaries
-#define R_T9        25
-#define R_K0        26  // Kernel
-#define R_K1        27
-#define R_GP        28  // Global pointer
-#define R_SP        29  // Stack pointer
-#define R_FP        30  // Frame pointer
-#define R_RA        31  // Return address
 
 // Coprocessor 0 register mnemonics
 #define CR_EPC      0x14

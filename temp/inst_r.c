@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "inst_r.h"
 #include "register.h"
-#include "memory.h"
+#include "memory_old.h"
 
 void parse_r_inst(uint32_t inst, r_inst *params) {
     params->instruction = inst;

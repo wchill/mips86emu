@@ -3,15 +3,6 @@
 
 #include <stdint.h>
 
-typedef struct {
-    uint32_t instruction;
-    uint8_t rs;
-    uint8_t rt;
-    uint8_t rd;
-    uint8_t shamt;
-    uint8_t funct;
-} r_inst;
-
 extern void (*r_inst_table[])(r_inst);
 extern void (*special_two_inst_table[])(r_inst);
 

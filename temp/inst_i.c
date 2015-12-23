@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "memory.h"
+#include "memory_old.h"
 #include "register.h"
 #include "inst_i.h"
 #include "coprocessor.h"

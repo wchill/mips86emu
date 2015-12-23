@@ -1,0 +1,9 @@
+#ifndef MIPS86CORE_ARITHMETIC_H
+#define MIPS86CORE_ARITHMETIC_H
+
+#include "mips.h"
+
+case OP0_ADD:
+
+
+#endif //MIPS86CORE_ARITHMETIC_H

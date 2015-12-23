@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "coprocessor.h"
-#include "memory.h"
+#include "memory_old.h"
 #include "register.h"
 
 void write_reg_coprocessor(uint8_t cop_num, uint8_t reg, uint32_t word) {

@@ -3,3 +3,4 @@ bin
 *.gch
 .DS_Store
 thumbs.db
+.idea

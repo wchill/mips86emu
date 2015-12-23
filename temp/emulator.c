@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "mips.h"
-#include "memory.h"
 #include "register.h"
 #include "instructions.h"
 #include "cop0.h"
@@ -15,10 +14,6 @@ bool emulator_running = false;
 bool branch_taken = false;
 
 void cleanup(int exit_code);
-
-static inline uint32_t j_inst(register uint32_t inst) {
-    return (pc & 0xf0000000) | ((inst & 0x3ffffff) << 2);
-}
 
 static inline uint16_t __bswap_16(uint16_t x) {
     return (x>>8) | (x<<8);
@@ -34,6 +29,7 @@ void print_registers() {
     for(i = 0; i < 32; i++) {
         registers[i] = read_reg_unsigned(i);
     }
+    /*
     printf("Registers:\n");
     printf("$0  0x%08x   $t0 0x%08x   $s0 0x%08x   $t8 0x%08x\n", registers[R_ZERO], registers[R_T0], registers[R_S0], registers[R_T8]);
     printf("$at 0x%08x   $t1 0x%08x   $s1 0x%08x   $t9 0x%08x\n", registers[R_AT], registers[R_T1], registers[R_S1], registers[R_T9]);
@@ -43,20 +39,23 @@ void print_registers() {
     printf("$a1 0x%08x   $t5 0x%08x   $s5 0x%08x   $sp 0x%08x\n", registers[R_A1], registers[R_T5], registers[R_S5], registers[R_SP]);
     printf("$a2 0x%08x   $t6 0x%08x   $s6 0x%08x   $fp 0x%08x\n", registers[R_A2], registers[R_T6], registers[R_S6], registers[R_FP]);
     printf("$a3 0x%08x   $t7 0x%08x   $s7 0x%08x   $ra 0x%08x\n", registers[R_A3], registers[R_T7], registers[R_S7], registers[R_RA]);
+    */
 }
 
 void cleanup(int exit_code) {
+    /*
     // cleanup
     print_registers();
-    memory_cleanup();
     cop0_cleanup();
     cop1_cleanup();
     //free(registers);
     printf("Exiting with code %d\n", exit_code);
     exit(exit_code);
+     */
 }
 
 int main(int argc, char *argv[]) {
+    /*
     if(argc < 2) {
         printf("Usage: mips86emu program.hex\n");
         return 1;
@@ -67,8 +66,7 @@ int main(int argc, char *argv[]) {
         printf("Error opening file: %s\n", argv[1]);
         return 1;
     }
-    
-    memory_init();
+
     write_reg(R_SP, STACK_TOP);
     write_reg(R_GP, DYNAMIC_BOTTOM);
 
@@ -86,9 +84,7 @@ int main(int argc, char *argv[]) {
     printf("Program loaded (%lld bytes)\n", file_size);
 
     // uint32_t cycle_counter = INTERRUPT_PERIOD;
-    // start of text segment
-    // temporarily set to 0x400018 until I figure out the ELF format
-    pc = MEMORY_TEXT + 24;
+
 
     int8_t exit_code = 0;
     emulator_running = true;
@@ -127,4 +123,5 @@ int main(int argc, char *argv[]) {
     }
 
     cleanup(exit_code);
+     */
 }

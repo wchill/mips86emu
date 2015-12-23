@@ -3,15 +3,6 @@
 
 #include <stdint.h>
 
-typedef struct {
-    uint32_t instruction;
-    uint8_t opcode;
-    uint8_t rs;
-    uint8_t rt;
-    uint16_t immediate;
-    uint32_t sign_ext_imm;
-} i_inst;
-
 extern void (*i_inst_table[])(i_inst);
 extern void (*branch_inst_table[])(i_inst);
 
