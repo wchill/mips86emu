@@ -13,6 +13,7 @@ typedef struct {
 } r_inst;
 
 extern void (*r_inst_table[])(r_inst);
+extern void (*special_two_inst_table[])(r_inst);
 
 void parse_r_inst(uint32_t inst, r_inst *params);
 
@@ -44,6 +45,13 @@ void instr_jump_reg(r_inst params);
 void instr_jump_and_link_reg(r_inst params);
 void instr_syscall(r_inst params);
 void instr_break(r_inst params);
+void instr_multiply_add(r_inst params);
+void instr_multiply_add_unsigned(r_inst params);
+void instr_multiply_to_register(r_inst params);
+void instr_multiply_sub(r_inst params);
+void instr_multiply_sub_unsigned(r_inst params);
+void instr_count_leading_zeros(r_inst params);
+void instr_count_leading_ones(r_inst params);
 void instr_unimplemented_r(r_inst params);
 
 int execute_syscall(uint32_t service);

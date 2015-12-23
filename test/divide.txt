@@ -1,0 +1,27 @@
+
+divide:     file format elf32-bigmips
+
+
+Disassembly of section .text:
+
+00400018 <_ftext>:
+  400018:	24020004 	li	v0,4
+  40001c:	24030002 	li	v1,2
+  400020:	14600002 	bnez	v1,40002c <_ftext+0x14>
+  400024:	0043001a 	div	zero,v0,v1
+  400028:	0007000d 	break	0x7
+  40002c:	2401ffff 	li	at,-1
+  400030:	14610004 	bne	v1,at,400044 <_ftext+0x2c>
+  400034:	3c018000 	lui	at,0x8000
+  400038:	14410002 	bne	v0,at,400044 <_ftext+0x2c>
+  40003c:	00000000 	nop
+  400040:	0006000d 	break	0x6
+  400044:	00004012 	mflo	t0
+
+00400048 <fail>:
+  400048:	24020004 	li	v0,4
+  40004c:	3c040040 	lui	a0,0x40
+  400050:	24841060 	addiu	a0,a0,4192
+  400054:	0000000c 	syscall
+  400058:	2402000a 	li	v0,10
+  40005c:	0000000c 	syscall

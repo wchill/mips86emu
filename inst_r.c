@@ -102,6 +102,7 @@ void instr_multiply_unsigned(r_inst params) {
 void instr_divide(r_inst params) {
     uint32_t quotient = (uint32_t) (read_reg_signed(params.rs) / read_reg_signed(params.rt));
     uint32_t remainder = (uint32_t) (read_reg_signed(params.rs) % read_reg_signed(params.rt));
+    printf("Division: q=%d, r=%d\n", quotient, remainder);
     write_lo_reg(quotient);
     write_hi_reg(remainder);
 }
@@ -171,6 +172,70 @@ int execute_syscall(uint32_t service) {
     return 0;
 }
 
+void instr_multiply_add(r_inst params) {
+
+}
+
+void instr_multiply_add_unsigned(r_inst params) {
+
+}
+
+void instr_multiply_to_register(r_inst params) {
+
+}
+
+void instr_multiply_sub(r_inst params) {
+
+}
+
+void instr_multiply_sub_unsigned(r_inst params) {
+
+}
+
+/*
+int LeadingZeros(int x)
+{
+        x |= (x >> 1);
+        x |= (x >> 2);
+        x |= (x >> 4);
+        x |= (x >> 8);
+        x |= (x >> 16);
+        return(sizeof(int)*8 -Ones(x));
+}
+int Ones(int x)
+{
+        x -= ((x >> 1) & 0x55555555);
+        x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+        x = (((x >> 4) + x) & 0x0f0f0f0f);
+        x += (x >> 8);
+        x += (x >> 16);
+        return(x & 0x0000003f);
+}
+*/
+
+void instr_count_leading_zeros(r_inst params) {
+    uint32_t x = read_reg_unsigned(params.rs);
+    uint32_t y;
+    int n = 32;
+
+    y = x >>16;  if (y != 0) {n = n -16;  x = y;}
+    y = x >> 8;  if (y != 0) {n = n - 8;  x = y;}
+    y = x >> 4;  if (y != 0) {n = n - 4;  x = y;}
+    y = x >> 2;  if (y != 0) {n = n - 2;  x = y;}
+    y = x >> 1;  if (y != 0) x = 2;
+    write_reg(params.rt, n - x);
+}
+
+void instr_count_leading_ones(r_inst params) {
+    uint32_t x = read_reg_unsigned(params.rs);
+    x -= ((x >> 1) & 0x55555555);
+    x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+    x = (((x >> 4) + x) & 0x0f0f0f0f);
+    x += (x >> 8);
+    x += (x >> 16);
+    write_reg(params.rt, x & 0x0000003f);
+}
+
 void (*r_inst_table[])(r_inst) = {
     instr_shift_left_logical,               // 0x00
     instr_unimplemented_r,
@@ -216,4 +281,41 @@ void (*r_inst_table[])(r_inst) = {
     instr_unimplemented_r,
     instr_set_less_than,                    // 0x2a
     instr_set_less_than_unsigned            // 0x2b
+};
+
+void (*special_two_inst_table[])(r_inst) = {
+    instr_multiply_add,             // 0x00 - MADD
+    instr_multiply_add_unsigned,    // 0x01 - MADDU 
+    instr_multiply_to_register,     // 0x02 - MUL
+    instr_unimplemented_r,
+    instr_multiply_sub,             // 0x04 - MSUB
+    instr_multiply_sub_unsigned,    // 0x05 - MSUBU
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_unimplemented_r,
+    instr_count_leading_zeros,      // 0x20 - CLZ
+    instr_count_leading_ones        // 0x21 - CLO
 };

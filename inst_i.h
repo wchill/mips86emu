@@ -16,6 +16,7 @@ extern void (*i_inst_table[])(i_inst);
 extern void (*branch_inst_table[])(i_inst);
 
 void parse_i_inst(uint32_t inst, i_inst *params);
+void instr_branch_other(i_inst params);
 
 void instr_branch_equal(i_inst params);
 void instr_branch_not_equal(i_inst params);

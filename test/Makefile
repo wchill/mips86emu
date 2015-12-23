@@ -1,4 +1,4 @@
-all: helloworld.hex torture_core.hex
+all: helloworld.hex torture_core.hex divide.hex
 
 clean:
 	rm -rf *.o *.hex
@@ -14,3 +14,9 @@ torture_core.hex: torture_core.s
 	mips-none-elf-objdump -d torture_core > output.txt
 	mips-none-elf-objcopy -O binary torture_core torture_core.hex
 	rm torture_core
+
+divide.hex: divide.s
+	mips-none-elf-gcc divide.s -O0 -nostdlib -mips32 -fno-delayed-branch --entry main -o divide
+	mips-none-elf-objdump -d divide > divide.txt
+	mips-none-elf-objcopy -O binary divide divide.hex
+	rm divide

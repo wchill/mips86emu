@@ -51,12 +51,12 @@ main:
 # Exception 1, (INT) -- Not implemented yet
 # Exception 4 (ADEL)
 #	li $t0, 0x400000
-#	lw $3, 1($t0)
+#	lw $v1, 1($t0)
 # Exception 5 (ADES)
-#	sw $3, 1($t0)
+#	sw $v1, 1($t0)
 # Exception 6 (IBUS) -- Can't test and continue
 # Exception 7 (DBUS)
-#	lw $3, 10000000($t0)
+#	lw $v1, 10000000($t0)
 # Exception 8 (SYSCALL) -- Not implemented
 # Exception 9 (BKPT)
 #	break 0
@@ -166,15 +166,15 @@ add_:	.asciiz "Testing ADD\n"
 	la $a0, add_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	add $4, $0, $0
-	bnez $4, fail
-	add $4, $0, $2
-	bne $4, 1, fail
-	add $4, $4, $3
-	bnez $4, fail
+	add $a0, $0, $0
+	bnez $a0, fail
+	add $a0, $0, $2
+	bne $a0, 1, fail
+	add $a0, $a0, $3
+	bnez $a0, fail
 
 
 	.data
@@ -184,12 +184,12 @@ addi_:	.asciiz "Testing ADDI\n"
 	la $a0, addi_
 	syscall
 
-	addi $4, $0, 0
-	bnez $4, fail
-	addi $4, $0, 1
-	bne $4, 1, fail
-	addi $4, $4, -1
-	bnez $4, fail
+	addi $a0, $0, 0
+	bnez $a0, fail
+	addi $a0, $0, 1
+	bne $a0, 1, fail
+	addi $a0, $a0, -1
+	bnez $a0, fail
 
 
 	.data
@@ -199,16 +199,16 @@ addiu_:	.asciiz "Testing ADDIU\n"
 	la $a0, addiu_
 	syscall
 
-	addiu $4, $0, 0
-	bnez $4, fail
-	addiu $4, $0, 1
-	bne $4, 1, fail
-	addiu $4, $4, -1
-	bnez $4, fail
+	addiu $a0, $0, 0
+	bnez $a0, fail
+	addiu $a0, $0, 1
+	bne $a0, 1, fail
+	addiu $a0, $a0, -1
+	bnez $a0, fail
 
-	li $2, 0x7fffffff
-	addiu $2, $2, 2	# should not trap
-	bne $2, 0x80000001, fail
+	li $v0, 0x7fffffff
+	addiu $v0, $v0, 2	# should not trap
+	bne $v0, 0x80000001, fail
 
 
 	.data
@@ -218,19 +218,19 @@ addu_:	.asciiz "Testing ADDU\n"
 	la $a0, addu_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	addu $4, $0, $0
-	bnez $4, fail
-	addu $4, $0, $2
-	bne $4, 1, fail
-	addu $4, $4, $3
-	bnez $4, fail
+	addu $a0, $0, $0
+	bnez $a0, fail
+	addu $a0, $0, $2
+	bne $a0, 1, fail
+	addu $a0, $a0, $3
+	bnez $a0, fail
 
-	li $2, 0x7fffffff
-	addu $2, $2, $2		# should not trap
-	bne $2, -2, fail
+	li $v0, 0x7fffffff
+	addu $v0, $v0, $2		# should not trap
+	bne $v0, -2, fail
 
 
 	.data
@@ -240,15 +240,15 @@ and_:	.asciiz "Testing AND\n"
 	la $a0, and_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	and $4, $0, $0
-	bnez $4, fail
-	and $4, $2, $2
-	beqz $4, fail
-	and $4, $2, $3
-	bne $4, 1, fail
+	and $a0, $0, $0
+	bnez $a0, fail
+	and $a0, $v0, $2
+	beqz $a0, fail
+	and $a0, $v0, $3
+	bne $a0, 1, fail
 
 
 	.data
@@ -258,17 +258,17 @@ andi_:	.asciiz "Testing ANDI\n"
 	la $a0, andi_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	andi $4, $0, 0
-	bnez $4, fail
-	and $4, $2, 1
-	beqz $4, fail
-	and $4, $2, -1
-	bne $4, 1, fail
-	and $4, $3, -1
-	bne $4, $3, fail
+	andi $a0, $0, 0
+	bnez $a0, fail
+	and $a0, $v0, 1
+	beqz $a0, fail
+	and $a0, $v0, -1
+	bne $a0, 1, fail
+	and $a0, $v1, -1
+	bne $a0, $v1, fail
 
 
 	.data
@@ -278,22 +278,22 @@ beq_:	.asciiz "Testing BEQ\n"
 	la $a0, beq_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	beq $0, $0, l1
 	j fail
-l1:	beq $2, $2, l2
+l1:	beq $v0, $v0, l2
 	j fail
-l2:	beq $3, $2, fail
+l2:	beq $v1, $v0, fail
 
-	beq $2, $2, far_away	# Check long branch
+	beq $v0, $v0, far_away	# Check long branch
 	j fail
 come_back:
 
-	li $2, 3
-l2_1:	sub $2, $2, 1
-	bnez $2, l2_1
+	li $v0, 3
+l2_1:	sub $v0, $v0, 1
+	bnez $v0, l2_1
 
 
 	.data
@@ -303,14 +303,14 @@ bgez_:	.asciiz "Testing BGEZ\n"
 	la $a0, bgez_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	bgez $0, l3
 	j fail
-l3:	bgez $3, l4
+l3:	bgez $v1, l4
 	j fail
-l4:	bgez $2, fail
+l4:	bgez $v0, fail
 
 
 	.data
@@ -320,16 +320,16 @@ bgezal_:.asciiz "Testing BGEZAL\n"
 	la $a0, bgezal_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	bgezal $0, l5
 	j fail
-	bgezal $2, fail
-l5:	bgezal $3, l6
+	bgezal $v0, fail
+l5:	bgezal $v1, l6
 l55: j fail
-l6:	la $4, l55
-	bne $31, $4, fail
+l6:	la $a0, l55
+	bne $31, $a0, fail
 
 
 	.data
@@ -339,13 +339,13 @@ bgtz_:	.asciiz "Testing BGTZ\n"
 	la $a0, bgtz_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	bgtz $0, fail
-l7:	bgtz $3, l8
+l7:	bgtz $v1, l8
 	j fail
-l8:	bgtz $2, fail
+l8:	bgtz $v0, fail
 
 
 	.data
@@ -355,14 +355,14 @@ blez_:	.asciiz "Testing BLEZ\n"
 	la $a0, blez_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	blez $0, l9
 	j fail
-l9:	blez $2, l10
+l9:	blez $v0, l10
 	j fail
-l10:	blez $3, fail
+l10:	blez $v1, fail
 
 
 	.data
@@ -372,13 +372,13 @@ bltz_:	.asciiz "Testing BLTZ\n"
 	la $a0, bltz_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	bltz $0, fail
-l11:	bltz $2, l12
+l11:	bltz $v0, l12
 	j fail
-l12:	bltz $3, fail
+l12:	bltz $v1, fail
 
 
 	.data
@@ -388,15 +388,15 @@ bltzal_:.asciiz "Testing BLTZAL\n"
 	la $a0, bltzal_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	bltzal $0, fail
-	bltzal $3, fail
-l13:	bltzal $2, l15
+	bltzal $v1, fail
+l13:	bltzal $v0, l15
 l14:	j fail
-l15:	la $4, l14
-	bne $31, $4, fail
+l15:	la $a0, l14
+	bne $31, $a0, fail
 
 
 	.data
@@ -406,12 +406,12 @@ bne_:	.asciiz "Testing BNE\n"
 	la $a0, bne_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
 	bne $0, $0, fail
-	bne $2, $2, fail
-	bne $3, $2, l16
+	bne $v0, $v0, fail
+	bne $v1, $v0, l16
 l16:
 
 
@@ -435,14 +435,14 @@ ccp_:	.asciiz "Testing move to/from coprocessor control 0/1\n"
 	la $a0, ccp_
 	syscall
 
-	li $2, 0x7f7f
-	ctc0 $2, $3
-	cfc0 $4, $3
-	bne $2, $4, fail
-	li $2, 0x7f7f
-	ctc1 $2, $3
-	cfc1 $4, $3
-	bne $2, $4, fail
+	li $v0, 0x7f7f
+	ctc0 $v0, $3
+	cfc0 $a0, $3
+	bne $v0, $a0, fail
+	li $v0, 0x7f7f
+	ctc1 $v0, $3
+	cfc1 $a0, $3
+	bne $v0, $a0, fail
 
 
 	.data
@@ -452,17 +452,17 @@ clo_:	.asciiz "Testing CLO\n"
 	la $a0, clo_
 	syscall
 
-	li $2, 0
-	clo $3, $2
-	bne $3, 0, fail
+	li $v0, 0
+	clo $v1, $2
+	bne $v1, 0, fail
 
-	li $2, 0xffffffff
-	clo $3, $2
-	bne $3, 32, fail
+	li $v0, 0xffffffff
+	clo $v1, $2
+	bne $v1, 32, fail
 
-	li $2, 0xf0000000
-	clo $3, $2
-	bne $3, 4, fail
+	li $v0, 0xf0000000
+	clo $v1, $2
+	bne $v1, 4, fail
 
 
 	.data
@@ -472,17 +472,17 @@ clz_:	.asciiz "Testing CLZ\n"
 	la $a0, clz_
 	syscall
 
-	li $2, 0
-	clz $3, $2
-	bne $3, 32, fail
+	li $v0, 0
+	clz $v1, $2
+	bne $v1, 32, fail
 
-	li $2, 0xffffffff
-	clz $3, $2
-	bne $3, 0, fail
+	li $v0, 0xffffffff
+	clz $v1, $2
+	bne $v1, 0, fail
 
-	li $2, 0x0fff0000
-	clz $3, $2
-	bne $3, 4, fail
+	li $v0, 0x0fff0000
+	clz $v1, $2
+	bne $v1, 4, fail
 
 
 	.data
@@ -493,35 +493,35 @@ div2_:	.asciiz "Expect exception caused by divide by 0:\n  "
 	la $a0, div_
 	syscall
 
-	li $2, 4
-	li $3, 2
-	li $4, -2
+	li $v0, 4
+	li $v1, 2
 
-	div $5, $2, $3
-	bne $5, 2, fail
-	mfhi $5
-	bne $5, 0, fail
+	div $t0, $v0, $v1
+	bne $t0, 2, fail
+	mfhi $t0
+	bne $t0, 0, fail
 
-	div $5, $2, $4
-	bne $5, -2, fail
-	mfhi $5
-	bne $5, 0, fail
+	li $v1, -2
+	div $t0, $v0, $v1
+	bne $t0, -2, fail
+	mfhi $t0
+	bne $t0, 0, fail
 
-	li $2, 0x80000000
-	li $4, 0xffffffff
-	div $5, $2, $4	# Overflows, but should not cause overflow
+	li $v0, 0x80000000
+	li $v1, 0xffffffff
+	div $t0, $v0, $v1	# Overflows, but should not cause overflow
 
-	li $2, 1
-	li $4, 0xffffffff
-	div $5, $2, $4
-	bne $5, -1, fail
-	mfhi $5
-	bne $5, 0, fail
+	li $v0, 1
+	li $v1, 0xffffffff
+	div $t0, $v0, $v1
+	bne $t0, -1, fail
+	mfhi $t0
+	bne $t0, 0, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, div2_
 	syscall
-	div $5, $2, $0
+	div $t0, $v0, $0
 
 
 	.data
@@ -532,33 +532,33 @@ divu2_:	.asciiz "Expect exception caused by divide by 0:\n  "
 	la $a0, divu_
 	syscall
 
-	li $2, 4
-	li $3, 2
-	li $4, -2
+	li $v0, 4
+	li $v1, 2
+	li $a0, -2
 
-	divu $5, $2, $3
+	divu $5, $v0, $3
 	bne $5, 2, fail
 	mfhi $5
 	bne $5, 0, fail
 
-	divu $0, $2, $3
+	divu $0, $v0, $3
 	mflo $5
 	bne $5, 2, fail
 	mfhi $5
 	bne $5, 0, fail
 
-	divu $5, $2, $4
+	divu $5, $v0, $4
 	bne $5, 0, fail
 	mfhi $5
 	bne $5, 4, fail
 
-	li $2, 0x80000000
-	li $4, 0xffffffff
-	divu $5, $2, $4	# Overflows, but should not cause overflow
+	li $v0, 0x80000000
+	li $a0, 0xffffffff
+	divu $5, $v0, $4	# Overflows, but should not cause overflow
 
-	li $2, 1
-	li $4, 0xffffffff
-	divu $5, $2, $4
+	li $v0, 1
+	li $a0, 0xffffffff
+	divu $5, $v0, $4
 	bne $5, 0, fail
 	mfhi $5
 	bne $5, 1, fail
@@ -566,7 +566,7 @@ divu2_:	.asciiz "Expect exception caused by divide by 0:\n  "
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, divu2_
 	syscall
-	divu $5, $2, $0
+	divu $5, $v0, $0
 
 
 	.data
@@ -591,8 +591,8 @@ jal_:	.asciiz "Testing JAL\n"
 
 	jal l18
 l19:	j l20
-l18:	la $4, l19
-	bne $31, $4, fail
+l18:	la $a0, l19
+	bne $31, $a0, fail
 	jr $31
 l20:
 
@@ -605,26 +605,26 @@ jalr2_:	.asciiz "Expect an non-word boundary exception:\n  "
 	la $a0, jalr_
 	syscall
 
-	la $2, l21
-	jalr $3, $2
+	la $v0, l21
+	jalr $v1, $2
 l23:	j l22
-l21:	la $4, l23
-	bne $3, $4, fail
+l21:	la $a0, l23
+	bne $v1, $a0, fail
 	jr $3
 
-l22:	la $2, l21a
+l22:	la $v0, l21a
 	jalr $2
 l23a:	j l22a
-l21a:	la $4, l23a
-	bne $31, $4, fail
+l21a:	la $a0, l23a
+	bne $31, $a0, fail
 	jr $31
 
 l22a:	li $v0, 4	# syscall 4 (print_str)
 	la $a0, jalr2_
 	syscall
-	la $2, l24
-	add $2, $2, 2
-l24:	jalr $3, $2
+	la $v0, l24
+	add $v0, $v0, 2
+l24:	jalr $v1, $2
 
 
 	.data
@@ -635,14 +635,14 @@ jr2_:	.asciiz "Expect an non-word boundary exception:\n  "
 	la $a0, jr_
 	syscall
 
-	la $2, l25
+	la $v0, l25
 	jr $2
 	j fail
 l25:	li $v0, 4	# syscall 4 (print_str)
 	la $a0, jr2_
 	syscall
-	la $2, l27
-	add $2, $2, 2
+	la $v0, l27
+	add $v0, $v0, 2
 l27:	jr $2
 
 
@@ -654,7 +654,7 @@ la_:	.asciiz "Testing LA\n"
 	syscall
 
 	# Simple cases already tested
-	li $4, 101
+	li $a0, 101
 	la $5, 10($4)
 	bne $5, 111, fail
 
@@ -674,21 +674,21 @@ ldd_:	.word 1, -1, 0, 0x8000000
 	la $a0, ld_
 	syscall
 
-	la $2, ldd_
-	ld $3, 0($2)
-	bne $3, 1, fail
-	bne $4, -1, fail
-	ld $3, 8($2)
-	bne $3, 0, fail
-	bne $4, 0x8000000, fail
+	la $v0, ldd_
+	ld $v1, 0($2)
+	bne $v1, 1, fail
+	bne $a0, -1, fail
+	ld $v1, 8($2)
+	bne $v1, 0, fail
+	bne $a0, 0x8000000, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, ld2_
 	syscall
 
 	li $t5, 0x7fffffff
-	ld $3, 1000($t5)
-	ld $3, 1001($t5)
+	ld $v1, 1000($t5)
+	ld $v1, 1001($t5)
 
 
 # LDC2 not tested
@@ -704,23 +704,23 @@ lhd_:	.half 1, -1, 0, 0x8000
 	la $a0, lh_
 	syscall
 
-	la $2, lhd_
-	lh $3, 0($2)
-	bne $3, 1, fail
-	lh $3, 2($2)
-	bne $3, -1, fail
-	lh $3, 4($2)
-	bne $3, 0, fail
-	lh $3, 6($2)
-	bne $3, 0xffff8000, fail
+	la $v0, lhd_
+	lh $v1, 0($2)
+	bne $v1, 1, fail
+	lh $v1, 2($2)
+	bne $v1, -1, fail
+	lh $v1, 4($2)
+	bne $v1, 0, fail
+	lh $v1, 6($2)
+	bne $v1, 0xffff8000, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, lh2_
 	syscall
 
 	li $t5, 0x7fffffff
-	lh $3, 1000($t5)
-	lh $3, 1001($t5)
+	lh $v1, 1000($t5)
+	lh $v1, 1001($t5)
 
 	.data
 lhu_:	.asciiz "Testing LHU\n"
@@ -729,23 +729,23 @@ lhu_:	.asciiz "Testing LHU\n"
 	la $a0, lhu_
 	syscall
 
-	la $2, lhd_
-	lhu $3, 0($2)
-	bne $3, 1, fail
-	lhu $3, 2($2)
-	bne $3, 0xffff, fail
-	lhu $3, 4($2)
-	bne $3, 0, fail
-	lhu $3, 6($2)
-	bne $3, 0x8000, fail
+	la $v0, lhd_
+	lhu $v1, 0($2)
+	bne $v1, 1, fail
+	lhu $v1, 2($2)
+	bne $v1, 0xffff, fail
+	lhu $v1, 4($2)
+	bne $v1, 0, fail
+	lhu $v1, 6($2)
+	bne $v1, 0x8000, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, lh2_
 	syscall
 
 	li $t5, 0x7fffffff
-	lhu $3, 1000($t5)
-	lhu $3, 1001($t5)
+	lhu $v1, 1000($t5)
+	lhu $v1, 1001($t5)
 
 
 	.data
@@ -756,12 +756,12 @@ ll1:	.word 10
 	la $a0, ll_
 	syscall
 
-	ll $2, ll1
-	bne $2, 10, fail
-	add $2, $2, 1
-	sc $2, ll1
-	lw $3, ll1
-	bne $2, $3, fail
+	ll $v0, ll1
+	bne $v0, 10, fail
+	add $v0, $v0, 1
+	sc $v0, ll1
+	lw $v1, ll1
+	bne $v0, $v1, fail
 
 	.data
 lui_:	.asciiz "Testing LUI\n"
@@ -770,20 +770,20 @@ lui_:	.asciiz "Testing LUI\n"
 	la $a0, lui_
 	syscall
 
-	lui $2, 0
-	bne $2, $0, fail
-	lui $2, 1
-	srl $2, $2, 16
-	addiu $2, $2, -1	# Don't do compare directly since it uses LUI
-	bne $2, $0, fail
-	lui $2, 1
-	andi $2, $2, 0xffff
-	bne $2, $0, fail
-	lui $2, 0xffff
-	srl $2, $2, 16
-	addiu $2, $2, 1
-	andi $2, $2, 0xffff
-	bne $2, $0, fail
+	lui $v0, 0
+	bne $v0, $0, fail
+	lui $v0, 1
+	srl $v0, $v0, 16
+	addiu $v0, $v0, -1	# Don't do compare directly since it uses LUI
+	bne $v0, $0, fail
+	lui $v0, 1
+	andi $v0, $v0, 0xffff
+	bne $v0, $0, fail
+	lui $v0, 0xffff
+	srl $v0, $v0, 16
+	addiu $v0, $v0, 1
+	andi $v0, $v0, 0xffff
+	bne $v0, $0, fail
 
 
 	.data
@@ -794,47 +794,47 @@ lwd_:	.word 1, -1, 0, 0x8000000
 	la $a0, lw_
 	syscall
 
-	la $2, lwd_
-	lw $3, 0($2)
-	bne $3, 1, fail
-	lw $3, 4($2)
-	bne $3, -1, fail
-	lw $3, 8($2)
-	bne $3, 0, fail
-	lw $3, 12($2)
-	bne $3, 0x8000000, fail
+	la $v0, lwd_
+	lw $v1, 0($2)
+	bne $v1, 1, fail
+	lw $v1, 4($2)
+	bne $v1, -1, fail
+	lw $v1, 8($2)
+	bne $v1, 0, fail
+	lw $v1, 12($2)
+	bne $v1, 0x8000000, fail
 
-	li $2, 0
-	lw $3, lwd_($2)
-	bne $3, 1, fail
-	addi $2, $2, 4
-	lw $3, lwd_($2)
-	bne $3, -1, fail
-	addi $2, $2, 4
-	lw $3, lwd_($2)
-	bne $3, 0, fail
-	addi $2, $2, 4
-	lw $3, lwd_($2)
-	bne $3, 0x8000000, fail
+	li $v0, 0
+	lw $v1, lwd_($2)
+	bne $v1, 1, fail
+	addi $v0, $v0, 4
+	lw $v1, lwd_($2)
+	bne $v1, -1, fail
+	addi $v0, $v0, 4
+	lw $v1, lwd_($2)
+	bne $v1, 0, fail
+	addi $v0, $v0, 4
+	lw $v1, lwd_($2)
+	bne $v1, 0x8000000, fail
 
-	la $2, lwd_
-	add $2, $2, 12
-	lw $3, -12($2)
-	bne $3, 1, fail
-	lw $3, -8($2)
-	bne $3, -1, fail
-	lw $3, -4($2)
-	bne $3, 0, fail
-	lw $3, 0($2)
-	bne $3, 0x8000000, fail
+	la $v0, lwd_
+	add $v0, $v0, 12
+	lw $v1, -12($2)
+	bne $v1, 1, fail
+	lw $v1, -8($2)
+	bne $v1, -1, fail
+	lw $v1, -4($2)
+	bne $v1, 0, fail
+	lw $v1, 0($2)
+	bne $v1, 0x8000000, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, lh2_
 	syscall
 
 	li $t5, 0x7fffffff
-	lw $3, 1000($t5)
-	lw $3, 1001($t5)
+	lw $v1, 1000($t5)
+	lw $v1, 1001($t5)
 
 
 # LWL is endian-specific
@@ -854,38 +854,38 @@ madd_:	.asciiz "Testing MADD\n"
 	mtlo $0
 	madd $0, $0
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
         mtlo $0
         mthi $0
-	li $4, 1
-	madd $4, $4
+	li $a0, 1
+	madd $a0, $4
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
-	li $3, 1
+	li $v1, 1
         mtlo $3
         mthi $0
-	li $4, -1
-	madd $3, $4
+	li $a0, -1
+	madd $v1, $4
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
         mtlo $0
         mthi $0
-        li $3, 1
-        li $4, -1
-        madd $3, $4
+        li $v1, 1
+        li $a0, -1
+        madd $v1, $4
         mfhi $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 	mflo $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 
 	li $t0, 1
 	mtlo $t0
@@ -894,25 +894,25 @@ madd_:	.asciiz "Testing MADD\n"
 	li $t1, -1
         madd $t0, $t1
         mfhi $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 	mflo $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 
         mtlo $0
         mthi $0
-	li $4, 0x10000
-	madd $4, $4
+	li $a0, 0x10000
+	madd $a0, $4
 	mfhi $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
-	li $4, 0x10000
-	madd $4, $4
+	li $a0, 0x10000
+	madd $a0, $4
 	mfhi $3
-	bne $3, 2, fail
+	bne $v1, 2, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
 	.data
 maddu_:	.asciiz "Testing MADDU\n"
@@ -926,23 +926,23 @@ maddu_:	.asciiz "Testing MADDU\n"
 
 	maddu $0, $0
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
-	li $4, 1
-	maddu $4, $4
+	li $a0, 1
+	maddu $a0, $4
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
-	li $4, -1
-	maddu $4, $4
+	li $a0, -1
+	maddu $a0, $4
 	mfhi $3
-	bne $3, 0xfffffffe, fail
+	bne $v1, 0xfffffffe, fail
 	mflo $3
-	bne $3, 2, fail
+	bne $v1, 2, fail
 
 	.data
 mcp_:	.asciiz "Testing move to/from coprocessor z\n"
@@ -951,20 +951,20 @@ mcp_:	.asciiz "Testing move to/from coprocessor z\n"
 	la $a0, mcp_
 	syscall
 
-	li $2, 0x7f7f
-	mtc0 $2, $3
-	mfc0 $4, $3
-	bne $2, $4, fail
-	li $2, 0x7f7f
-	mtc1 $2, $3
-	mfc1 $4, $f3
-	bne $2, $4, fail
-	li $2, 0x7f7f
-	li $3, 0xf7f7
-	mtc1 $2, $4
+	li $v0, 0x7f7f
+	mtc0 $v0, $3
+	mfc0 $a0, $3
+	bne $v0, $a0, fail
+	li $v0, 0x7f7f
+	mtc1 $v0, $3
+	mfc1 $a0, $f3
+	bne $v0, $a0, fail
+	li $v0, 0x7f7f
+	li $v1, 0xf7f7
+	mtc1 $v0, $4
 	mfc1 $6, $4
-	bne $2, $6, fail
-	bne $3, $7, fail
+	bne $v0, $6, fail
+	bne $v1, $7, fail
 
 
 	.data
@@ -976,26 +976,26 @@ hilo_:	.asciiz "Testing move to/from HI/LO\n"
 
 	mthi $0
 	mfhi $2
-	bnez $2, fail
+	bnez $v0, fail
 	mtlo $0
 	mflo $2
-	bnez $2, fail
-	li $2, 1
+	bnez $v0, fail
+	li $v0, 1
 	mthi $2
 	mfhi $3
-	bne $3, $2, fail
-	li $2, 1
+	bne $v1, $v0, fail
+	li $v0, 1
 	mtlo $2
 	mflo $3
-	bne $3, $2, fail
-	li $2, -1
+	bne $v1, $v0, fail
+	li $v0, -1
 	mthi $2
 	mfhi $3
-	bne $3, $2, fail
-	li $2, -1
+	bne $v1, $v0, fail
+	li $v0, -1
 	mtlo $2
 	mflo $3
-	bne $3, $2, fail
+	bne $v1, $v0, fail
 
 
 
@@ -1010,44 +1010,44 @@ msub_:	.asciiz "Testing MSUB\n"
 	mtlo $0
 	msub $0, $0
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
 	mthi $0
 	mtlo $0
-	li $4, 1
-	msub $4, $4
+	li $a0, 1
+	msub $a0, $4
 	mfhi $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 	mflo $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 
-	li $4, 1
-	msub $3, $4
+	li $a0, 1
+	msub $v1, $4
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
 	mthi $0
 	mtlo $0
-	li $4, 0x10000
-	msub $4, $4
+	li $a0, 0x10000
+	msub $a0, $4
 	mfhi $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
 	mtlo $0
 	mthi $0
-	li $4, 1
+	li $a0, 1
 	li $5, -1
 	msub $5, $4
 	mfhi $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
 	.data
 msubu_:	.asciiz "Testing MSUBU\n"
@@ -1060,28 +1060,28 @@ msubu_:	.asciiz "Testing MSUBU\n"
 	mtlo $0
 	msubu $0, $0
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
 	mthi $0
 	mtlo $0
-	li $4, 1
-	msubu $4, $4
+	li $a0, 1
+	msubu $a0, $4
 	mfhi $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 	mflo $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 
 	mtlo $0
 	mthi $0
-	li $4, 1
+	li $a0, 1
 	li $5, -1
 	msubu $5, $4
 	mfhi $3
-	bne $3, 0xffffffff, fail
+	bne $v1, 0xffffffff, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
 	.data
 mul_:	.asciiz "Testing MUL\n"
@@ -1090,61 +1090,61 @@ mul_:	.asciiz "Testing MUL\n"
 	la $a0, mul_
 	syscall
 
-	li $2, 1
-	mul $3, $2, 0
-	bnez $3, fail
-	mul $3, $2, 1
-	bne $3, 1, fail
-	mul $3, $2, 10
-	bne $3, 10, fail
+	li $v0, 1
+	mul $v1, $v0, 0
+	bnez $v1, fail
+	mul $v1, $v0, 1
+	bne $v1, 1, fail
+	mul $v1, $v0, 10
+	bne $v1, 10, fail
 
-	mul $2, $0, $0
-	bnez $2, fail
+	mul $v0, $0, $0
+	bnez $v0, fail
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
-	li $4, 1
-	mul $2, $4, $4
-	bne $2, 1, fail
+	li $a0, 1
+	mul $v0, $a0, $4
+	bne $v0, 1, fail
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
-	li $4, -1
-	mul $2, $4, $4
-	bne $2, 1, fail
+	li $a0, -1
+	mul $v0, $a0, $4
+	bne $v0, 1, fail
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
-	li $4, -1
+	li $a0, -1
 	li $5, 1
-	mul $2, $4, $5
-	bne $2, -1, fail
+	mul $v0, $a0, $5
+	bne $v0, -1, fail
 	mfhi $3
-	bne $3, -1, fail
+	bne $v1, -1, fail
 	mflo $3
-	bne $3, -1, fail
+	bne $v1, -1, fail
 
-	li $4, 0x10000
-	mul $2, $4, $4
-	bne $2, 0, fail
+	li $a0, 0x10000
+	mul $v0, $a0, $4
+	bne $v0, 0, fail
 	mfhi $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
-	li $4, 0x80000000
-	mul $2, $4, $4
-	bne $2, 0, fail
+	li $a0, 0x80000000
+	mul $v0, $a0, $4
+	bne $v0, 0, fail
 	mfhi $3
-	bne $3, 0x40000000, fail
+	bne $v1, 0x40000000, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
 
 	.data
@@ -1156,61 +1156,61 @@ multu_:	.asciiz "Testing MULTU\n"
 
 	multu $0, $0
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bnez $3, fail
+	bnez $v1, fail
 
-	li $4, 1
-	multu $4, $4
+	li $a0, 1
+	multu $a0, $4
 	mfhi $3
-	bnez $3, fail
+	bnez $v1, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
-	li $4, -1
-	multu $4, $4
+	li $a0, -1
+	multu $a0, $4
 	mfhi $3
-	bne $3, 0xfffffffe, fail
+	bne $v1, 0xfffffffe, fail
 	mflo $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 
-	li $4, -1
+	li $a0, -1
 	li $5, 0
-	multu $4, $5
+	multu $a0, $5
 	mfhi $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
-	li $4, -1
+	li $a0, -1
 	li $5, 1
-	multu $4, $5
+	multu $a0, $5
 	mfhi $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 	mflo $3
-	bne $3, -1, fail
+	bne $v1, -1, fail
 
-	li $4, 0x10000
-	multu $4, $4
+	li $a0, 0x10000
+	multu $a0, $4
 	mfhi $3
-	bne $3, 1, fail
+	bne $v1, 1, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
-	li $4, 0x80000000
-	multu $4, $4
+	li $a0, 0x80000000
+	multu $a0, $4
 	mfhi $3
-	bne $3, 0x40000000, fail
+	bne $v1, 0x40000000, fail
 	mflo $3
-	bne $3, 0, fail
+	bne $v1, 0, fail
 
-	li $3, 0xcecb8f27
-	li $4, 0xfd87b5f2
-	multu $3, $4
+	li $v1, 0xcecb8f27
+	li $a0, 0xfd87b5f2
+	multu $v1, $4
 	mfhi $3
-	bne $3, 0xcccccccb, fail
+	bne $v1, 0xcccccccb, fail
 	mflo $3
-	bne $3, 0x7134e5de, fail
+	bne $v1, 0x7134e5de, fail
 
 
 	.data
@@ -1221,29 +1221,29 @@ mulo1_:	.asciiz "Expect an exception:\n	 "
 	la $a0, mulo_
 	syscall
 
-	mulo $2, $0, $0
-	bne $2, 0, fail
+	mulo $v0, $0, $0
+	bne $v0, 0, fail
 
-	li $4, 1
-	mulo $2, $4, $4
-	bne $2, 1, fail
+	li $a0, 1
+	mulo $v0, $a0, $4
+	bne $v0, 1, fail
 
-	li $4, -1
-	mulo $2, $4, $4
-	bne $2, 1, fail
+	li $a0, -1
+	mulo $v0, $a0, $4
+	bne $v0, 1, fail
 
-	li $4, -1
+	li $a0, -1
 	li $5, 1
-	mulo $2, $4, $5
-	bne $2, -1, fail
+	mulo $v0, $a0, $5
+	bne $v0, -1, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, mulo1_
 	syscall
 
-	li $4, 0x10000
-	mulo $2, $4, $4
-	bne $2, 0, fail
+	li $a0, 0x10000
+	mulo $v0, $a0, $4
+	bne $v0, 0, fail
 
 
 	.data
@@ -1253,15 +1253,15 @@ nor_:	.asciiz "Testing NOR\n"
 	la $a0, nor_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	nor $4, $0, $0
-	bne $4, -1, fail
-	nor $4, $2, $2
-	bne $4, 0xfffffffe, fail
-	nor $4, $2, $3
-	bne $4, 0, fail
+	nor $a0, $0, $0
+	bne $a0, -1, fail
+	nor $a0, $v0, $2
+	bne $a0, 0xfffffffe, fail
+	nor $a0, $v0, $3
+	bne $a0, 0, fail
 
 
 	.data
@@ -1271,15 +1271,15 @@ or_:	.asciiz "Testing OR\n"
 	la $a0, or_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	or $4, $0, $0
-	bne $4, 0, fail
-	or $4, $2, $2
-	bne $4, 1, fail
-	or $4, $2, $3
-	bne $4, -1, fail
+	or $a0, $0, $0
+	bne $a0, 0, fail
+	or $a0, $v0, $2
+	bne $a0, 1, fail
+	or $a0, $v0, $3
+	bne $a0, -1, fail
 
 
 	.data
@@ -1289,15 +1289,15 @@ ori_:	.asciiz "Testing ORI\n"
 	la $a0, ori_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	ori $4, $0, 0
-	bne $4, 0, fail
-	ori $4, $2, 1
-	bne $4, 1, fail
-	ori $4, $2, 0xffff
-	bne $4, 0x0000ffff, fail
+	ori $a0, $0, 0
+	bne $a0, 0, fail
+	ori $a0, $v0, 1
+	bne $a0, 1, fail
+	ori $a0, $v0, 0xffff
+	bne $a0, 0x0000ffff, fail
 
 
 # RFE tested previously
@@ -1312,9 +1312,9 @@ spde_:  .word 0
 	la $a0, sd_
 	syscall
 
-        la $2, spde_
-        sub $2, $2, 4
-        lw $3, 0($2)     # look for exception
+        la $v0, spde_
+        sub $v0, $v0, 4
+        lw $v1, 0($2)     # look for exception
 
 
 # SB is endian-specific
@@ -1330,21 +1330,21 @@ sdd_:	.word 0, 0, 0, 0
 	la $a0, sd_
 	syscall
 
-	li $3, 0x7f7f7f7f
-	li $4, 0xf7f7f7f7
-	la $2, sdd_
-	sd $3, 0($2)
+	li $v1, 0x7f7f7f7f
+	li $a0, 0xf7f7f7f7
+	la $v0, sdd_
+	sd $v1, 0($2)
 	ld $5, 0($2)
-	bne $3, $5, fail
-	bne $4, $4, fail
+	bne $v1, $5, fail
+	bne $a0, $a0, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, sd2_
 	syscall
 
 	li $t5, 0x7fffffff
-	sd $3, 1000($t5)
-	sd $3, 1001($t5)
+	sd $v1, 1000($t5)
+	sd $v1, 1001($t5)
 
 
 	.data
@@ -1356,12 +1356,12 @@ swc1d_:	.word 0, 0
 	la $a0, swc1_
 	syscall
 
-	li $3, 0x7f7f7f7f
-	la $2, swc1d_
-	mtc1 $3, $0
+	li $v1, 0x7f7f7f7f
+	la $v0, swc1d_
+	mtc1 $v1, $0
 	swc1 $f0, 0($2)
 	lw $5, 0($2)
-	bne $5, $3, fail
+	bne $5, $v1, fail
 
 
 	.data
@@ -1373,12 +1373,12 @@ s.sd_:	.word 0, 0
 	la $a0, s.s_
 	syscall
 
-	li $3, 0x7f7f7f7f
-	la $2, s.sd_
-	mtc1 $3, $0
+	li $v1, 0x7f7f7f7f
+	la $v0, s.sd_
+	mtc1 $v1, $0
 	s.s $f0, 0($2)
 	lw $5, 0($2)
-	bne $5, $3, fail
+	bne $5, $v1, fail
 
 
 	.data
@@ -1390,16 +1390,16 @@ sdc1d_:	.word 0, 0
 	la $a0, sdc1_
 	syscall
 
-	li $3, 0x7f7f7f7f
-	li $4, 0xf7f7f7f7
-	la $2, sdc1d_
-	mtc1 $3, $0
-	mtc1 $4, $1
+	li $v1, 0x7f7f7f7f
+	li $a0, 0xf7f7f7f7
+	la $v0, sdc1d_
+	mtc1 $v1, $0
+	mtc1 $a0, $1
 	sdc1 $f0, 0($2)
 	lw $5, 0($2)
-	bne $5, $3, fail
+	bne $5, $v1, fail
 	lw $5, 4($2)
-	bne $5, $4, fail
+	bne $5, $a0, fail
 
 
 	.data
@@ -1411,16 +1411,16 @@ s.dd_:	.word 0, 0
 	la $a0, s.d_
 	syscall
 
-	li $3, 0x7f7f7f7f
-	li $4, 0xf7f7f7f7
-	la $2, s.dd_
-	mtc1 $3, $0
-	mtc1 $4, $1
+	li $v1, 0x7f7f7f7f
+	li $a0, 0xf7f7f7f7
+	la $v0, s.dd_
+	mtc1 $v1, $0
+	mtc1 $a0, $1
 	s.d $f0, 0($2)
 	lw $5, 0($2)
-	bne $5, $3, fail
+	bne $5, $v1, fail
 	lw $5, 4($2)
-	bne $5, $4, fail
+	bne $5, $a0, fail
 
 
 # SDC2 not tested
@@ -1432,16 +1432,16 @@ sll_:	.asciiz "Testing SLL\n"
 	la $a0, sll_
 	syscall
 
-	li $2, 1
+	li $v0, 1
 
-	sll $3, $2, 0
-	bne $3, 1, fail
-	sll $3, $2, 1
-	bne $3, 2, fail
-	sll $3, $2, 16
-	bne $3, 0x10000, fail
-	sll $3, $2, 31
-	bne $3, 0x80000000, fail
+	sll $v1, $v0, 0
+	bne $v1, 1, fail
+	sll $v1, $v0, 1
+	bne $v1, 2, fail
+	sll $v1, $v0, 16
+	bne $v1, 0x10000, fail
+	sll $v1, $v0, 31
+	bne $v1, 0x80000000, fail
 
 
 	.data
@@ -1451,19 +1451,19 @@ sllv_:	.asciiz "Testing SLLV\n"
 	la $a0, sllv_
 	syscall
 
-	li $2, 1
-	li $4, 0
-	sllv $3, $2, $4
-	bne $3, 1, fail
-	li $4, 1
-	sllv $3, $2, $4
-	bne $3, 2, fail
-	li $4, 16
-	sllv $3, $2, $4
-	bne $3, 0x10000, fail
-	li $4, 32
-	sllv $3, $2, $4
-	bne $3, 1, fail
+	li $v0, 1
+	li $a0, 0
+	sllv $v1, $v0, $4
+	bne $v1, 1, fail
+	li $a0, 1
+	sllv $v1, $v0, $4
+	bne $v1, 2, fail
+	li $a0, 16
+	sllv $v1, $v0, $4
+	bne $v1, 0x10000, fail
+	li $a0, 32
+	sllv $v1, $v0, $4
+	bne $v1, 1, fail
 
 
 	.data
@@ -1473,22 +1473,22 @@ slt_:	.asciiz "Testing SLT\n"
 	la $a0, slt_
 	syscall
 
-	slt $3, $0, $0
-	bne $3, 0, fail
-	li $2, 1
-	slt $3, $2, $0
-	bne $3, 0, fail
-	slt $3, $0, $2
-	bne $3, 1, fail
-	li $2, -1
-	slt $3, $2, $0
-	bne $3, 1, fail
-	slt $3, $0, $2
-	bne $3, 0, fail
-	li $2, -1
-	li $4, 1
-	slt $3, $2, $4
-	bne $3, 1, fail
+	slt $v1, $0, $0
+	bne $v1, 0, fail
+	li $v0, 1
+	slt $v1, $v0, $0
+	bne $v1, 0, fail
+	slt $v1, $0, $2
+	bne $v1, 1, fail
+	li $v0, -1
+	slt $v1, $v0, $0
+	bne $v1, 1, fail
+	slt $v1, $0, $2
+	bne $v1, 0, fail
+	li $v0, -1
+	li $a0, 1
+	slt $v1, $v0, $4
+	bne $v1, 1, fail
 
 
 	.data
@@ -1498,24 +1498,24 @@ slti_:	.asciiz "Testing SLTI\n"
 	la $a0, slti_
 	syscall
 
-	slti $3, $0, 0
-	bne $3, 0, fail
-	li $2, 1
-	slti $3, $2, 0
-	bne $3, 0, fail
-	slti $3, $0, 1
-	bne $3, 1, fail
-	li $2, -1
-	slti $3, $2, 0
-	bne $3, 1, fail
-	slti $3, $0, -1
-	bne $3, 0, fail
-	li $2, -1
-	li $4, 1
-	slti $3, $2, 1
-	bne $3, 1, fail
-	slti $3, $4, -1
-	bne $3, 0, fail
+	slti $v1, $0, 0
+	bne $v1, 0, fail
+	li $v0, 1
+	slti $v1, $v0, 0
+	bne $v1, 0, fail
+	slti $v1, $0, 1
+	bne $v1, 1, fail
+	li $v0, -1
+	slti $v1, $v0, 0
+	bne $v1, 1, fail
+	slti $v1, $0, -1
+	bne $v1, 0, fail
+	li $v0, -1
+	li $a0, 1
+	slti $v1, $v0, 1
+	bne $v1, 1, fail
+	slti $v1, $a0, -1
+	bne $v1, 0, fail
 
 
 	.data
@@ -1525,24 +1525,24 @@ sltiu_:	.asciiz "Testing SLTIU\n"
 	la $a0, sltiu_
 	syscall
 
-	sltiu $3, $0, 0
-	bne $3, 0, fail
-	li $2, 1
-	sltiu $3, $2, 0
-	bne $3, 0, fail
-	sltiu $3, $0, 1
-	bne $3, 1, fail
-	li $2, -1
-	sltiu $3, $2, 0
-	bne $3, 0, fail
-	sltiu $3, $0, -1
-	bne $3, 1, fail
-	li $2, -1
-	li $4, 1
-	sltiu $3, $2, 1
-	bne $3, 0, fail
-	sltiu $3, $4, -1
-	bne $3, 1, fail
+	sltiu $v1, $0, 0
+	bne $v1, 0, fail
+	li $v0, 1
+	sltiu $v1, $v0, 0
+	bne $v1, 0, fail
+	sltiu $v1, $0, 1
+	bne $v1, 1, fail
+	li $v0, -1
+	sltiu $v1, $v0, 0
+	bne $v1, 0, fail
+	sltiu $v1, $0, -1
+	bne $v1, 1, fail
+	li $v0, -1
+	li $a0, 1
+	sltiu $v1, $v0, 1
+	bne $v1, 0, fail
+	sltiu $v1, $a0, -1
+	bne $v1, 1, fail
 
 
 	.data
@@ -1552,22 +1552,22 @@ sltu_:	.asciiz "Testing SLTU\n"
 	la $a0, sltu_
 	syscall
 
-	sltu $3, $0, $0
-	bne $3, 0, fail
-	li $2, 1
-	sltu $3, $2, $0
-	bne $3, 0, fail
-	sltu $3, $0, $2
-	bne $3, 1, fail
-	li $2, -1
-	sltu $3, $2, $0
-	bne $3, 0, fail
-	sltu $3, $0, $2
-	bne $3, 1, fail
-	li $2, -1
-	li $4, 1
-	sltu $3, $2, $4
-	bne $3, 0, fail
+	sltu $v1, $0, $0
+	bne $v1, 0, fail
+	li $v0, 1
+	sltu $v1, $v0, $0
+	bne $v1, 0, fail
+	sltu $v1, $0, $2
+	bne $v1, 1, fail
+	li $v0, -1
+	sltu $v1, $v0, $0
+	bne $v1, 0, fail
+	sltu $v1, $0, $2
+	bne $v1, 1, fail
+	li $v0, -1
+	li $a0, 1
+	sltu $v1, $v0, $4
+	bne $v1, 0, fail
 
 
 	.data
@@ -1577,17 +1577,17 @@ sra_:	.asciiz "Testing SRA\n"
 	la $a0, sra_
 	syscall
 
-	li $2, 1
-	sra $3, $2, 0
-	bne $3, 1, fail
-	sra $3, $2, 1
-	bne $3, 0, fail
-	li $2, 0x1000
-	sra $3, $2, 4
-	bne $3, 0x100, fail
-	li $2, 0x80000000
-	sra $3, $2, 4
-	bne $3, 0xf8000000, fail
+	li $v0, 1
+	sra $v1, $v0, 0
+	bne $v1, 1, fail
+	sra $v1, $v0, 1
+	bne $v1, 0, fail
+	li $v0, 0x1000
+	sra $v1, $v0, 4
+	bne $v1, 0x100, fail
+	li $v0, 0x80000000
+	sra $v1, $v0, 4
+	bne $v1, 0xf8000000, fail
 
 
 	.data
@@ -1597,21 +1597,21 @@ srav_:	.asciiz "Testing SRAV\n"
 	la $a0, srav_
 	syscall
 
-	li $2, 1
-	li $4, 0
-	srav $3, $2, $4
-	bne $3, 1, fail
-	li $4, 1
-	srav $3, $2, $4
-	bne $3, 0, fail
-	li $2, 0x1000
-	li $4, 4
-	srav $3, $2, $4
-	bne $3, 0x100, fail
-	li $2, 0x80000000
-	li $4, 4
-	srav $3, $2, $4
-	bne $3, 0xf8000000, fail
+	li $v0, 1
+	li $a0, 0
+	srav $v1, $v0, $4
+	bne $v1, 1, fail
+	li $a0, 1
+	srav $v1, $v0, $4
+	bne $v1, 0, fail
+	li $v0, 0x1000
+	li $a0, 4
+	srav $v1, $v0, $4
+	bne $v1, 0x100, fail
+	li $v0, 0x80000000
+	li $a0, 4
+	srav $v1, $v0, $4
+	bne $v1, 0xf8000000, fail
 
 
 	.data
@@ -1621,17 +1621,17 @@ srl_:	.asciiz "Testing SRL\n"
 	la $a0, srl_
 	syscall
 
-	li $2, 1
-	srl $3, $2, 0
-	bne $3, 1, fail
-	srl $3, $2, 1
-	bne $3, 0, fail
-	li $2, 0x1000
-	srl $3, $2, 4
-	bne $3, 0x100, fail
-	li $2, 0x80000000
-	srl $3, $2, 4
-	bne $3, 0x08000000, fail
+	li $v0, 1
+	srl $v1, $v0, 0
+	bne $v1, 1, fail
+	srl $v1, $v0, 1
+	bne $v1, 0, fail
+	li $v0, 0x1000
+	srl $v1, $v0, 4
+	bne $v1, 0x100, fail
+	li $v0, 0x80000000
+	srl $v1, $v0, 4
+	bne $v1, 0x08000000, fail
 
 
 	.data
@@ -1641,21 +1641,21 @@ srlv_:	.asciiz "Testing SRLV\n"
 	la $a0, srlv_
 	syscall
 
-	li $2, 1
-	li $4, 0
-	srlv $3, $2, $4
-	bne $3, 1, fail
-	li $4, 1
-	srlv $3, $2, $4
-	bne $3, 0, fail
-	li $2, 0x1000
-	li $4, 4
-	srlv $3, $2, $4
-	bne $3, 0x100, fail
-	li $2, 0x80000000
-	li $4, 4
-	srlv $3, $2, $4
-	bne $3, 0x08000000, fail
+	li $v0, 1
+	li $a0, 0
+	srlv $v1, $v0, $4
+	bne $v1, 1, fail
+	li $a0, 1
+	srlv $v1, $v0, $4
+	bne $v1, 0, fail
+	li $v0, 0x1000
+	li $a0, 4
+	srlv $v1, $v0, $4
+	bne $v1, 0x100, fail
+	li $v0, 0x80000000
+	li $a0, 4
+	srlv $v1, $v0, $4
+	bne $v1, 0x08000000, fail
 
 
 	.data
@@ -1676,26 +1676,26 @@ sub1_:	.asciiz "Expect an overflow exceptions:\n  "
 	la $a0, sub_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	sub $4, $0, $0
-	bnez $4, fail
-	sub $4, $0, $2
-	bne $4, -1, fail
-	sub $4, $2, $0
-	bne $4, 1, fail
-	sub $4, $2, $3
-	bne $4, 2, fail
-	sub $4, $3, $2
-	bne $4, -2, fail
+	sub $a0, $0, $0
+	bnez $a0, fail
+	sub $a0, $0, $2
+	bne $a0, -1, fail
+	sub $a0, $v0, $0
+	bne $a0, 1, fail
+	sub $a0, $v0, $3
+	bne $a0, 2, fail
+	sub $a0, $v1, $2
+	bne $a0, -2, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, sub1_
 	syscall
-	li $2, 0x80000000
-	li $3, 1
-	sub $4, $3, $2
+	li $v0, 0x80000000
+	li $v1, 1
+	sub $a0, $v1, $2
 
 
 	.data
@@ -1705,23 +1705,23 @@ subu_:	.asciiz "Testing SUBU\n"
 	la $a0, subu_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	subu $4, $0, $0
-	bnez $4, fail
-	subu $4, $0, $2
-	bne $4, -1, fail
-	subu $4, $2, $0
-	bne $4, 1, fail
-	subu $4, $2, $3
-	bne $4, 2, fail
-	subu $4, $3, $2
-	bne $4, -2, fail
+	subu $a0, $0, $0
+	bnez $a0, fail
+	subu $a0, $0, $2
+	bne $a0, -1, fail
+	subu $a0, $v0, $0
+	bne $a0, 1, fail
+	subu $a0, $v0, $3
+	bne $a0, 2, fail
+	subu $a0, $v1, $2
+	bne $a0, -2, fail
 
-	li $2, 0x80000000
-	li $3, 1
-	subu $4, $3, $2
+	li $v0, 0x80000000
+	li $v1, 1
+	subu $a0, $v1, $2
 
 
 	.data
@@ -1734,24 +1734,24 @@ swd_:	.byte 0, 0, 0, 0
 	la $a0, sw_
 	syscall
 
-	li $3, 0x7f7f7f7f
-	la $2, swd_
-	sw $3, 0($2)
-	lw $4, 0($2)
-	bne $4, 0x7f7f7f7f, fail
+	li $v1, 0x7f7f7f7f
+	la $v0, swd_
+	sw $v1, 0($2)
+	lw $a0, 0($2)
+	bne $a0, 0x7f7f7f7f, fail
 
-	li $2, 4
-	sw $3, swd_($2)
-	lw $4, swd_($2)
-	bne $4, 0x7f7f7f7f, fail
+	li $v0, 4
+	sw $v1, swd_($2)
+	lw $a0, swd_($2)
+	bne $a0, 0x7f7f7f7f, fail
 
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, sw2_
 	syscall
 
 	li $t5, 0x7fffffff
-	sw $3, 1000($t5)
-	sw $3, 1001($t5)
+	sw $v1, 1000($t5)
+	sw $v1, 1001($t5)
 
 	lw $t0, far_away
 	sw $0, far_away
@@ -1862,7 +1862,7 @@ teq_:	.asciiz "Testing TEQ\nExpect one exception message:\n  "
 	la $a0, teq_
 	syscall
 
-	li $2, 1
+	li $v0, 1
 	teq $0, $2
 	teq $0, $0
 
@@ -1885,11 +1885,11 @@ tge_:	.asciiz "Testing TGE\nExpect two exception messages:\n  "
 	la $a0, tge_
 	syscall
 
-	li $2, 1
-	li $3, 2
-	tge $2, $3
+	li $v0, 1
+	li $v1, 2
+	tge $v0, $3
 	tge $0, $0
-	tge $3, $2
+	tge $v1, $2
 
 
 	.data
@@ -1899,10 +1899,10 @@ tgei_:	.asciiz "Testing TGEI\nExpect two exception messages:\n  "
 	la $a0, tgei_
 	syscall
 
-	li $2, 8
+	li $v0, 8
 	tgei $0, 4
 	tgei $0, 0
-	tgei $2, 1
+	tgei $v0, 1
 
 
 	.data
@@ -1912,10 +1912,10 @@ tgeiu_:	.asciiz "Testing TGEIU\nExpect two exception messages:\n  "
 	la $a0, tgeiu_
 	syscall
 
-	li $2, -4
+	li $v0, -4
 	tgeiu $0, 4
 	tgeiu $0, 0
-	tgeiu $2, 1
+	tgeiu $v0, 1
 
 
 	.data
@@ -1925,11 +1925,11 @@ tgeu_:	.asciiz "Testing TGEU\nExpect two exception messages:\n  "
 	la $a0, tgeu_
 	syscall
 
-	li $2, 1
-	li $3, -4
-	tgeu $2, $3
+	li $v0, 1
+	li $v1, -4
+	tgeu $v0, $3
 	tgeu $0, $0
-	tgeu $3, $2
+	tgeu $v1, $2
 
 
 	.data
@@ -1951,11 +1951,11 @@ tlt_:	.asciiz "Testing TLT\nExpect one exception message:\n  "
 	la $a0, tlt_
 	syscall
 
-	li $2, 1
-	li $3, 2
-	tlt $2, $3
+	li $v0, 1
+	li $v1, 2
+	tlt $v0, $3
 	tlt $0, $0
-	tlt $3, $2
+	tlt $v1, $2
 
 
 	.data
@@ -1965,10 +1965,10 @@ tlti_:	.asciiz "Testing TLTI\nExpect one exception message:\n  "
 	la $a0, tlti_
 	syscall
 
-	li $2, 8
+	li $v0, 8
 	tlti $0, 4
 	tlti $0, 0
-	tlti $2, 1
+	tlti $v0, 1
 
 
 	.data
@@ -1978,10 +1978,10 @@ tltiu_:	.asciiz "Testing TLTIU\nExpect one exception message:\n  "
 	la $a0, tltiu_
 	syscall
 
-	li $2, -4
+	li $v0, -4
 	tltiu $0, 4
 	tltiu $0, 0
-	tltiu $2, 1
+	tltiu $v0, 1
 
 
 	.data
@@ -1991,11 +1991,11 @@ tltu_:	.asciiz "Testing TLTU\nExpect one exception message:\n  "
 	la $a0, tltu_
 	syscall
 
-	li $2, 1
-	li $3, -4
-	tltu $2, $3
+	li $v0, 1
+	li $v1, -4
+	tltu $v0, $3
 	tltu $0, $0
-	tltu $3, $2
+	tltu $v1, $2
 
 
 	.data
@@ -2005,7 +2005,7 @@ tne_:	.asciiz "Testing TNE\nExpect one exception message:\n  "
 	la $a0, tne_
 	syscall
 
-	li $2, 1
+	li $v0, 1
 	tne $0, $2
 	tne $0, $0
 
@@ -2028,15 +2028,15 @@ xor_:	.asciiz "Testing XOR\n"
 	la $a0, xor_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	xor $4, $0, $0
-	bne $4, 0, fail
-	xor $4, $3, $3
-	bne $4, 0, fail
-	xor $4, $2, $3
-	bne $4, 0xfffffffe, fail
+	xor $a0, $0, $0
+	bne $a0, 0, fail
+	xor $a0, $v1, $3
+	bne $a0, 0, fail
+	xor $a0, $v0, $3
+	bne $a0, 0xfffffffe, fail
 
 	.data
 xori_:	.asciiz "Testing XORI\n"
@@ -2045,15 +2045,15 @@ xori_:	.asciiz "Testing XORI\n"
 	la $a0, xori_
 	syscall
 
-	li $2, 1
-	li $3, -1
+	li $v0, 1
+	li $v1, -1
 
-	xori $4, $0, 0
-	bne $4, 0, fail
-	xori $4, $3, 0xffff
-	bne $4, 0xffff0000, fail
-	xori $4, $2, 0xffff
-	bne $4, 0x0000fffe, fail
+	xori $a0, $0, 0
+	bne $a0, 0, fail
+	xori $a0, $v1, 0xffff
+	bne $a0, 0xffff0000, fail
+	xori $a0, $v0, 0xffff
+	bne $a0, 0x0000fffe, fail
 
 
 #
@@ -2069,16 +2069,16 @@ fp_sm100:.float -100.0
 	la $a0, abs.s_
 	syscall
 
-	lw $4, fp_s100
+	lw $a0, fp_s100
 	lwc1 $f0, fp_s100
 	abs.s $f2, $f0
 	mfc1 $5, $f2
-	bne $4, $5, fail
+	bne $a0, $5, fail
 
 	lwc1 $f0, fp_sm100
 	abs.s $f2, $f0
 	mfc1 $5, $f2
-	bne $4, $5, fail
+	bne $a0, $5, fail
 
 
 	.data
@@ -2090,14 +2090,14 @@ fp_dm100:.double -100.0
 	la $a0, abs.d_
 	syscall
 
-	lw $4, fp_d100
+	lw $a0, fp_d100
 	lw $5, fp_d100+4
 	lwc1 $f0, fp_d100
 	lwc1 $f1, fp_d100+4
 	abs.d $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 	lwc1 $f0, fp_dm100
@@ -2105,7 +2105,7 @@ fp_dm100:.double -100.0
 	abs.d $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -2118,25 +2118,25 @@ fp_s1:	.float 1.0
 	la $a0, add.s_
 	syscall
 
-	lw $4, fp_s0
+	lw $a0, fp_s0
 	lwc1 $f0, fp_s0
 	add.s $f2, $f0, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_s1
+	lw $a0, fp_s1
 	lwc1 $f0, fp_s0
 	lwc1 $f2, fp_s1
 	add.s $f4, $f0, $f2
 	mfc1 $6, $f4
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_s0
+	lw $a0, fp_s0
 	lwc1 $f0, fp_s1
 	lwc1 $f2, fp_sm1
 	add.s $f4, $f0, $f2
 	mfc1 $6, $f4
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 
 	.data
@@ -2149,17 +2149,17 @@ fp_dm1:	.double -1.0
 	la $a0, add.d_
 	syscall
 
-	lw $4, fp_d0
+	lw $a0, fp_d0
 	lw $5, fp_d0+4
 	lwc1 $f0, fp_d0
 	lwc1 $f1, fp_d0+4
 	add.d $f2, $f0, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	lwc1 $f0, fp_d0
 	lwc1 $f1, fp_d0+4
@@ -2168,10 +2168,10 @@ fp_dm1:	.double -1.0
 	add.d $f4, $f0, $f2
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d0
+	lw $a0, fp_d0
 	lw $5, fp_d0+4
 	lwc1 $f0, fp_d1
 	lwc1 $f1, fp_d1+4
@@ -2180,7 +2180,7 @@ fp_dm1:	.double -1.0
 	add.d $f4, $f0, $f2
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -2979,31 +2979,31 @@ cvt.d.s_:	.asciiz "Testing CVT.D.S\n"
 	la $a0, cvt.d.s_
 	syscall
 
-	lw $4, fp_d0
+	lw $a0, fp_d0
 	lw $5, fp_d0+4
 	lwc1 $f0, fp_s0
 	cvt.d.s $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	lwc1 $f0, fp_s1
 	cvt.d.s $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_dm1
+	lw $a0, fp_dm1
 	lw $5, fp_dm1+4
 	lwc1 $f0, fp_sm1
 	cvt.d.s $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -3014,33 +3014,33 @@ cvt.d.w_:	.asciiz "Testing CVT.D.W\n"
 	la $a0, cvt.d.w_
 	syscall
 
-	lw $4, fp_d0
+	lw $a0, fp_d0
 	lw $5, fp_d0+4
 	mtc1 $0, $0
 	cvt.d.w $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	li $t1, 1
 	mtc1 $t1, $0
 	cvt.d.w $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_dm1
+	lw $a0, fp_dm1
 	lw $5, fp_dm1+4
 	li $t1, -1
 	mtc1 $t1, $0
 	cvt.d.w $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -3051,26 +3051,26 @@ cvt.s.d_:	.asciiz "Testing CVT.S.D\n"
 	la $a0, cvt.s.d_
 	syscall
 
-	lw $4, fp_s0
+	lw $a0, fp_s0
 	lwc1 $f0, fp_d0
 	lwc1 $f1, fp_d0+4
 	cvt.s.d $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_s1
+	lw $a0, fp_s1
 	lwc1 $f0, fp_d1
 	lwc1 $f1, fp_d1+4
 	cvt.s.d $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_sm1
+	lw $a0, fp_sm1
 	lwc1 $f0, fp_dm1
 	lwc1 $f1, fp_dm1+4
 	cvt.s.d $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 
 	.data
@@ -3080,25 +3080,25 @@ cvt.s.w_:	.asciiz "Testing CVT.S.W\n"
 	la $a0, cvt.s.w_
 	syscall
 
-	lw $4, fp_s0
+	lw $a0, fp_s0
 	mtc1 $0, $0
 	cvt.s.w $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_s1
+	lw $a0, fp_s1
 	li $t1, 1
 	mtc1 $t1, $0
 	cvt.s.w $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_sm1
+	lw $a0, fp_sm1
 	li $t1, -1
 	mtc1 $t1, $0
 	cvt.s.w $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 
 	.data
@@ -3118,15 +3118,15 @@ cvt.w.d_:	.asciiz "Testing CVT.W.D\n"
 	lwc1 $f1, fp_d1+4
 	cvt.w.d $f2, $f0
 	mfc1 $6, $f2
-	li $4, 1
-	bne $4, $6, fail
+	li $a0, 1
+	bne $a0, $6, fail
 
 	lwc1 $f0, fp_dm1
 	lwc1 $f1, fp_dm1+4
 	cvt.w.d $f2, $f0
 	mfc1 $6, $f2
-	li $4, -1
-	bne $4, $6, fail
+	li $a0, -1
+	bne $a0, $6, fail
 
 
 	.data
@@ -3144,14 +3144,14 @@ cvt.w.s_:	.asciiz "Testing CVT.W.S\n"
 	lwc1 $f0, fp_s1
 	cvt.w.s $f2, $f0
 	mfc1 $6, $f2
-	li $4, 1
-	bne $4, $6, fail
+	li $a0, 1
+	bne $a0, $6, fail
 
 	lwc1 $f0, fp_sm1
 	cvt.w.s $f2, $f0
 	mfc1 $6, $f2
-	li $4, -1
-	bne $4, $6, fail
+	li $a0, -1
+	bne $a0, $6, fail
 
 
 	.data
@@ -3164,18 +3164,18 @@ fp_s1p5:.float 1.5
 	la $a0, div.s_
 	syscall
 
-	lw $4, fp_s1
+	lw $a0, fp_s1
 	lwc1 $f0, fp_s1
 	div.s $f2, $f0, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_s1p5
+	lw $a0, fp_s1p5
 	lwc1 $f0, fp_s3
 	lwc1 $f2, fp_s2
 	div.s $f4, $f0, $f2
 	mfc1 $6, $f4
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 
 	.data
@@ -3188,17 +3188,17 @@ fp_d1p5:.double 1.5
 	la $a0, div.d_
 	syscall
 
-	lw $4, fp_d1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	lwc1 $f0, fp_d1
 	lwc1 $f1, fp_d1+4
 	div.d $f2, $f0, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d1p5
+	lw $a0, fp_d1p5
 	lw $5, fp_d1p5+4
 	lwc1 $f0, fp_d3
 	lwc1 $f1, fp_d3+4
@@ -3207,7 +3207,7 @@ fp_d1p5:.double 1.5
 	div.d $f4, $f0, $f2
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -3269,14 +3269,14 @@ ldc1d_:	.word 0x7f7f7f7f, 0xf7f7f7f7
 	la $a0, ldc1_
 	syscall
 
-	la $2, ldc1d_
+	la $v0, ldc1d_
 	ldc1 $f0, 0($2)
-	mfc1 $3, $f0
-	mfc1 $4, $f1
+	mfc1 $v1, $f0
+	mfc1 $a0, $f1
 	lw $5, 0($2)
-	bne $5, $3, fail
+	bne $5, $v1, fail
 	lw $5, 4($2)
-	bne $5, $4, fail
+	bne $5, $a0, fail
 
 
 	.data
@@ -3288,14 +3288,14 @@ l.dd_:	.word 0x7f7f7f7f, 0xf7f7f7f7
 	la $a0, l.d_
 	syscall
 
-	la $2, l.dd_
+	la $v0, l.dd_
 	l.d $f0, 0($2)
-	mfc1 $3, $f0
-	mfc1 $4, $f1
+	mfc1 $v1, $f0
+	mfc1 $a0, $f1
 	lw $5, 0($2)
-	bne $5, $3, fail
+	bne $5, $v1, fail
 	lw $5, 4($2)
-	bne $5, $4, fail
+	bne $5, $a0, fail
 
 
 	.data
@@ -3307,11 +3307,11 @@ lwc1d_:	.word 0x7f7f7f7f
 	la $a0, lwc1_
 	syscall
 
-	la $2, lwc1d_
+	la $v0, lwc1d_
 	lwc1 $f0, 0($2)
-	mfc1 $3, $f0
-	lw $4, 0($2)
-	bne $4, $3, fail
+	mfc1 $v1, $f0
+	lw $a0, 0($2)
+	bne $a0, $v1, fail
 
 
 	.data
@@ -3323,11 +3323,11 @@ l.sd_:	.word 0x7f7f7f7f
 	la $a0, l.s_
 	syscall
 
-	la $2, l.sd_
+	la $v0, l.sd_
 	l.s $f0, 0($2)
-	mfc1 $3, $f0
-	lw $4, 0($2)
-	bne $4, $3, fail
+	mfc1 $v1, $f0
+	lw $a0, 0($2)
+	bne $a0, $v1, fail
 
 
 # MFC1 tested previously
@@ -3340,12 +3340,12 @@ mov.s_:	.asciiz "Testing MOV.S\n"
 	la $a0, mov.s_
 	syscall
 
-	lw $4, fp_s1
+	lw $a0, fp_s1
 	lwc1 $f2, fp_s1
 	mov.s $f4, $f2
 	mov.s $f6, $f4
 	mfc1 $6, $f6
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 	.data
 mov.d_:	.asciiz "Testing MOV.D\n"
@@ -3354,7 +3354,7 @@ mov.d_:	.asciiz "Testing MOV.D\n"
 	la $a0, mov.d_
 	syscall
 
-	lw $4, fp_d1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	lwc1 $f2, fp_d1
 	lwc1 $f3, fp_d1+4
@@ -3362,7 +3362,7 @@ mov.d_:	.asciiz "Testing MOV.D\n"
 	mov.d $f6, $f4
 	mfc1 $6, $f6
 	mfc1 $7, $f7
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -3373,15 +3373,15 @@ movz.d_:.asciiz "Testing MOVZ.D\n"
 	la $a0, movz.d_
 	syscall
 
-	li $2, 2
-	lw $4, fp_d1
+	li $v0, 2
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	lwc1 $f0, fp_d1
 	lwc1 $f1, fp_d1+4
 	movz.d $f2, $f0, $0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $6, $4, fail
+	bne $6, $a0, fail
 	bne $7, $5, fail
 
 	lwc1 $f0, fp_d1p5
@@ -3389,7 +3389,7 @@ movz.d_:.asciiz "Testing MOVZ.D\n"
 	movz.d $f2, $f0, $2
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $6, $4, fail
+	bne $6, $a0, fail
 	bne $7, $5, fail
 
 
@@ -3400,17 +3400,17 @@ movz.s_:.asciiz "Testing MOVZ.s\n"
 	la $a0, movz.s_
 	syscall
 
-	li $2, 2
-	lw $4, fp_s1
+	li $v0, 2
+	lw $a0, fp_s1
 	lwc1 $f0, fp_s1
 	movz.s $f2, $f0, $0
 	mfc1 $6, $f2
-	bne $6, $4, fail
+	bne $6, $a0, fail
 
 	lwc1 $f0, fp_s1p5
 	movz.s $f2, $f0, $2
 	mfc1 $6, $f2
-	bne $6, $4, fail
+	bne $6, $a0, fail
 
 
 # MTC1 tested previously
@@ -3422,18 +3422,18 @@ mul.s_:	.asciiz "Testing MUL.S\n"
 	la $a0, mul.s_
 	syscall
 
-	lw $4, fp_s1
+	lw $a0, fp_s1
 	lwc1 $f0, fp_s1
 	mul.s $f2, $f0, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_s3
+	lw $a0, fp_s3
 	lwc1 $f0, fp_s1p5
 	lwc1 $f2, fp_s2
 	mul.s $f4, $f0, $f2
 	mfc1 $6, $f4
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 
 	.data
@@ -3443,17 +3443,17 @@ mul.d_:	.asciiz "Testing MUL.D\n"
 	la $a0, mul.d_
 	syscall
 
-	lw $4, fp_d1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	lwc1 $f0, fp_d1
 	lwc1 $f1, fp_d1+4
 	mul.d $f2, $f0, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d3
+	lw $a0, fp_d3
 	lw $5, fp_d3+4
 	lwc1 $f0, fp_d1p5
 	lwc1 $f1, fp_d1p5+4
@@ -3462,7 +3462,7 @@ mul.d_:	.asciiz "Testing MUL.D\n"
 	mul.d $f4, $f0, $f2
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -3474,17 +3474,17 @@ fp_sm3:	.float -3.0
 	la $a0, neg.s_
 	syscall
 
-	lw $4, fp_sm1
+	lw $a0, fp_sm1
 	lwc1 $f0, fp_s1
 	neg.s $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_s3
+	lw $a0, fp_s3
 	lwc1 $f0, fp_sm3
 	neg.s $f2, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 
 	.data
@@ -3495,24 +3495,24 @@ fp_dm3:	.double -3.0
 	la $a0, neg.d_
 	syscall
 
-	lw $4, fp_dm1
+	lw $a0, fp_dm1
 	lw $5, fp_dm1+4
 	lwc1 $f0, fp_d1
 	lwc1 $f1, fp_d1+4
 	neg.d $f2, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d3
+	lw $a0, fp_d3
 	lw $5, fp_d3+4
 	lwc1 $f0, fp_dm3
 	lwc1 $f1, fp_dm3+4
 	neg.d $f4, $f0
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -3604,29 +3604,29 @@ sub.s_:	.asciiz "Testing SUB.S\n"
 	la $a0, sub.s_
 	syscall
 
-	lw $4, fp_s0
+	lw $a0, fp_s0
 	lwc1 $f0, fp_s0
 	sub.s $f2, $f0, $f0
 	mfc1 $6, $f2
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
-	lw $4, fp_sm1
+	lw $a0, fp_sm1
 	lw $5, fp_s1
 	lwc1 $f0, fp_s0
 	lwc1 $f2, fp_s1
 	sub.s $f4, $f0, $f2
 	mfc1 $6, $f4
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	sub.s $f4, $f2, $f0
 	mfc1 $6, $f4
 	bne $5, $6, fail
 
-	lw $4, fp_s1p5
+	lw $a0, fp_s1p5
 	lwc1 $f0, fp_s1p5
 	lwc1 $f2, fp_s3
 	sub.s $f4, $f2, $f0
 	mfc1 $6, $f4
-	bne $4, $6, fail
+	bne $a0, $6, fail
 
 
 	.data
@@ -3636,17 +3636,17 @@ sub.d_:	.asciiz "Testing SUB.D\n"
 	la $a0, sub.d_
 	syscall
 
-	lw $4, fp_d0
+	lw $a0, fp_d0
 	lw $5, fp_d0+4
 	lwc1 $f0, fp_d0
 	lwc1 $f1, fp_d0+4
 	sub.d $f2, $f0, $f0
 	mfc1 $6, $f2
 	mfc1 $7, $f3
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_dm1
+	lw $a0, fp_dm1
 	lw $5, fp_dm1+4
 	lwc1 $f0, fp_d0
 	lwc1 $f1, fp_d0+4
@@ -3655,17 +3655,17 @@ sub.d_:	.asciiz "Testing SUB.D\n"
 	sub.d $f4, $f0, $f2
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
-	lw $4, fp_d1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
 	sub.d $f4, $f2, $f0
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
-	lw $4, fp_d1p5
+	lw $a0, fp_d1p5
 	lw $5, fp_d1p5+4
 	lwc1 $f0, fp_d1p5
 	lwc1 $f1, fp_d1p5+4
@@ -3674,7 +3674,7 @@ sub.d_:	.asciiz "Testing SUB.D\n"
 	sub.d $f4, $f2, $f0
 	mfc1 $6, $f4
 	mfc1 $7, $f5
-	bne $4, $6, fail
+	bne $a0, $6, fail
 	bne $5, $7, fail
 
 
@@ -3738,17 +3738,17 @@ abs_:	.asciiz "Testing ABS\n"
 	la $a0, abs_
 	syscall
 
-	li $2, 1
-	abs $3, $2
-	bne $3, 1, fail
+	li $v0, 1
+	abs $v1, $2
+	bne $v1, 1, fail
 
-	li $2, -1
-	abs $2, $2
-	bne $2, 1, fail
+	li $v0, -1
+	abs $v0, $2
+	bne $v0, 1, fail
 
-	li $2, 0
-	abs $2, $2
-	bne $2, 0, fail
+	li $v0, 0
+	abs $v0, $2
+	bne $v0, 0, fail
 
 
 	.data
@@ -3773,8 +3773,8 @@ bal_:	.asciiz "Testing BAL\n"
 
 	bal l102
 l103:	j l104
-l102:	la $4, l103
-	bne $31, $4, fail
+l102:	la $a0, l103
+	bne $31, $a0, fail
 	jr $31
 l104:
 
@@ -3788,8 +3788,8 @@ beqz_:	.asciiz "Testing BEQZ\n"
 
 	beqz $0, l105
 	j fail
-l105:	li $2, 1
-	beqz $2, fail
+l105:	li $v0, 1
+	beqz $v0, fail
 
 
 	.data
@@ -3801,25 +3801,25 @@ bge_:	.asciiz "Testing BGE\n"
 
 	bge $0, $0, l106
 	j fail
-l106:	li $2, 1
-	bge $0, $2, fail
-	bge $2, $0, l107
+l106:	li $v0, 1
+	bge $0, $v0, fail
+	bge $v0, $0, l107
 	j fail
-l107:	li $3, -1
-	bge $3, $2, fail
-	bge $2, $3, l108
+l107:	li $v1, -1
+	bge $v1, $v0, fail
+	bge $v0, $v1, l108
 	j fail
 l108:
 
 	bge $0, 0, l109
 	j fail
-l109:	li $2, 1
+l109:	li $v0, 1
 	bge $0, 1, fail
-	bge $2, 0, l110
+	bge $v0, 0, l110
 	j fail
-l110:	li $3, -1
-	bge $3, 1, fail
-	bge $2, -1, l111
+l110:	li $v1, -1
+	bge $v1, 1, fail
+	bge $v0, -1, l111
 	j fail
 l111:
 
@@ -3833,25 +3833,25 @@ bgeu_:	.asciiz "Testing BGEU\n"
 
 	bgeu $0, $0, l112
 	j fail
-l112:	li $2, 1
-	bgeu $0, $2, fail
-	bgeu $2, $0, l113
+l112:	li $v0, 1
+	bgeu $0, $v0, fail
+	bgeu $v0, $0, l113
 	j fail
-l113:	li $3, -1
-	bgeu $2, $3, fail
-	bgeu $3, $2, l114
+l113:	li $v1, -1
+	bgeu $v0, $v1, fail
+	bgeu $v1, $v0, l114
 	j fail
 l114:
 
 	bgeu $0, 0, l115
 	j fail
-l115:	li $2, 1
+l115:	li $v0, 1
 	bgeu $0, 1, fail
-	bgeu $2, 0, l116
+	bgeu $v0, 0, l116
 	j fail
-l116:	li $3, -1
-	bgeu $2, -1, fail
-	bgeu $3, 1, l117
+l116:	li $v1, -1
+	bgeu $v0, -1, fail
+	bgeu $v1, 1, l117
 	j fail
 l117:
 
@@ -3864,24 +3864,24 @@ bgt_:	.asciiz "Testing BGT\n"
 	syscall
 
 	bgt $0, $0, fail
-l120:	li $2, 1
-	bgt $0, $2, fail
-	bgt $2, $0, l121
+l120:	li $v0, 1
+	bgt $0, $v0, fail
+	bgt $v0, $0, l121
 	j fail
-l121:	li $3, -1
-	bgt $3, $2, fail
-	bgt $2, $3, l122
+l121:	li $v1, -1
+	bgt $v1, $v0, fail
+	bgt $v0, $v1, l122
 	j fail
 l122:
 
 	bgt $0, 0, fail
-l123:	li $2, 1
+l123:	li $v0, 1
 	bgt $0, 1, fail
-	bgt $2, 0, l124
+	bgt $v0, 0, l124
 	j fail
-l124:	li $3, -1
-	bgt $3, 1, fail
-	bgt $2, -1, l125
+l124:	li $v1, -1
+	bgt $v1, 1, fail
+	bgt $v0, -1, l125
 	j fail
 l125:
 
@@ -3894,24 +3894,24 @@ bgtu_:	.asciiz "Testing BGTU\n"
 	syscall
 
 	bgtu $0, $0, fail
-l132:	li $2, 1
-	bgtu $0, $2, fail
-	bgtu $2, $0, l133
+l132:	li $v0, 1
+	bgtu $0, $v0, fail
+	bgtu $v0, $0, l133
 	j fail
-l133:	li $3, -1
-	bgtu $2, $3, fail
-	bgtu $3, $2, l134
+l133:	li $v1, -1
+	bgtu $v0, $v1, fail
+	bgtu $v1, $v0, l134
 	j fail
 l134:
 
 	bgtu $0, 0, fail
-l135:	li $2, 1
+l135:	li $v0, 1
 	bgtu $0, 1, fail
-	bgtu $2, 0, l136
+	bgtu $v0, 0, l136
 	j fail
-l136:	li $3, -1
-	bgtu $2, -1, fail
-	bgtu $3, 1, l137
+l136:	li $v1, -1
+	bgtu $v0, -1, fail
+	bgtu $v1, 1, l137
 	j fail
 l137:
 
@@ -3925,25 +3925,25 @@ ble_:	.asciiz "Testing BLE\n"
 
 	ble $0, $0, l140
 	j fail
-l140:	li $2, 1
-	ble $2, $0, fail
-	ble $0, $2, l141
+l140:	li $v0, 1
+	ble $v0, $0, fail
+	ble $0, $v0, l141
 	j fail
-l141:	li $3, -1
-	ble $2, $3, fail
-	ble $3, $2, l142
+l141:	li $v1, -1
+	ble $v0, $v1, fail
+	ble $v1, $v0, l142
 	j fail
 l142:
 
 	ble $0, 0, l143
 	j fail
-l143:	li $2, 1
-	ble $2, 0, fail
+l143:	li $v0, 1
+	ble $v0, 0, fail
 	ble $0, 1, l144
 	j fail
-l144:	li $3, -1
-	ble $2, -1, fail
-	ble $3, 1, l145
+l144:	li $v1, -1
+	ble $v0, -1, fail
+	ble $v1, 1, l145
 	j fail
 l145:
 
@@ -3957,25 +3957,25 @@ bleu_:	.asciiz "Testing BLEU\n"
 
 	bleu $0, $0, l152
 	j fail
-l152:	li $2, 1
-	bleu $2, $0, fail
-	bleu $0, $2, l153
+l152:	li $v0, 1
+	bleu $v0, $0, fail
+	bleu $0, $v0, l153
 	j fail
-l153:	li $3, -1
-	bleu $3, $2, fail
-	bleu $2, $3, l154
+l153:	li $v1, -1
+	bleu $v1, $v0, fail
+	bleu $v0, $v1, l154
 	j fail
 l154:
 
 	bleu $0, 0, l155
 	j fail
-l155:	li $2, 1
-	bleu $2, 0, fail
+l155:	li $v0, 1
+	bleu $v0, 0, fail
 	bleu $0, 1, l156
 	j fail
-l156:	li $3, -1
-	bleu $3, 1, fail
-	bleu $2, -1, l157
+l156:	li $v1, -1
+	bleu $v1, 1, fail
+	bleu $v0, -1, l157
 	j fail
 l157:
 
@@ -3988,24 +3988,24 @@ blt_:	.asciiz "Testing BLT\n"
 	syscall
 
 	blt $0, $0, fail
-l160:	li $2, 1
-	blt $2, $0, fail
-	blt $0, $2, l161
+l160:	li $v0, 1
+	blt $v0, $0, fail
+	blt $0, $v0, l161
 	j fail
-l161:	li $3, -1
-	blt $2, $3, fail
-	blt $3, $2, l162
+l161:	li $v1, -1
+	blt $v0, $v1, fail
+	blt $v1, $v0, l162
 	j fail
 l162:
 
 	blt $0, 0, fail
-l163:	li $2, 1
-	blt $2, 0, fail
+l163:	li $v0, 1
+	blt $v0, 0, fail
 	blt $0, 1, l164
 	j fail
-l164:	li $3, -1
-	blt $2, -1, fail
-	blt $3, 1, l165
+l164:	li $v1, -1
+	blt $v0, -1, fail
+	blt $v1, 1, l165
 	j fail
 l165:
 
@@ -4018,24 +4018,24 @@ bltu_:	.asciiz "Testing BLTU\n"
 	syscall
 
 	bltu $0, $0, fail
-l172:	li $2, 1
-	bltu $2, $0, fail
-	bltu $0, $2, l173
+l172:	li $v0, 1
+	bltu $v0, $0, fail
+	bltu $0, $v0, l173
 	j fail
-l173:	li $3, -1
-	bltu $3, $2, fail
-	bltu $2, $3, l174
+l173:	li $v1, -1
+	bltu $v1, $v0, fail
+	bltu $v0, $v1, l174
 	j fail
 l174:
 
 	bltu $0, 0, fail
-l175:	li $2, 1
-	bltu $2, 0, fail
+l175:	li $v0, 1
+	bltu $v0, 0, fail
 	bltu $0, 1, l176
 	j fail
-l176:	li $3, -1
-	bltu $3, 1, fail
-	bltu $2, -1, l177
+l176:	li $v1, -1
+	bltu $v1, 1, fail
+	bltu $v0, -1, l177
 	j fail
 l177:
 
@@ -4048,8 +4048,8 @@ bnez_:	.asciiz "Testing BNEZ\n"
 	syscall
 
 	bnez $0, fail
-	li $2, 1
-	bnez $2, l180
+	li $v0, 1
+	bnez $v0, l180
 	j fail
 l180:
 
@@ -4067,22 +4067,22 @@ li_:	.asciiz "Testing LI\n"
 	la $a0, li_
 	syscall
 
-	li $2, 0xfffffff
-	bne $2, 0xfffffff, fail
-	li $2, 0xffffffe
-	bne $2, 0xffffffe, fail
-	li $2, 0
-	bnez $2, fail
-	li $2, 0x7fffffff
-	bne $2, 0x7fffffff, fail
-	li $2, 32767
-	bne $2, 32767, fail
-	li $2, 32768
-	bne $2, 32768, fail
-	li $2, 65535
-	bne $2, 65535, fail
-	li $2, 65536
-	bne $2, 65536, fail
+	li $v0, 0xfffffff
+	bne $v0, 0xfffffff, fail
+	li $v0, 0xffffffe
+	bne $v0, 0xffffffe, fail
+	li $v0, 0
+	bnez $v0, fail
+	li $v0, 0x7fffffff
+	bne $v0, 0x7fffffff, fail
+	li $v0, 32767
+	bne $v0, 32767, fail
+	li $v0, 32768
+	bne $v0, 32768, fail
+	li $v0, 65535
+	bne $v0, 65535, fail
+	li $v0, 65536
+	bne $v0, 65536, fail
 
 
 	.data
@@ -4093,20 +4093,20 @@ li.d_:	.asciiz "Testing LI.d\n"
 	syscall
 
 	li.d $f0, 1.0
-	mfc1 $2, $f0
-	mfc1 $3, $f1
-	lw $4, fp_d1
+	mfc1 $v0, $f0
+	mfc1 $v1, $f1
+	lw $a0, fp_d1
 	lw $5, fp_d1+4
-	bne $2, $4, fail
-	bne $3, $5, fail
+	bne $v0, $a0, fail
+	bne $v1, $5, fail
 
 	li.d $f0, -1.0
-	mfc1 $2, $f0
-	mfc1 $3, $f1
-	lw $4, fp_dm1
+	mfc1 $v0, $f0
+	mfc1 $v1, $f1
+	lw $a0, fp_dm1
 	lw $5, fp_dm1+4
-	bne $2, $4, fail
-	bne $3, $5, fail
+	bne $v0, $a0, fail
+	bne $v1, $5, fail
 
 
 	.data
@@ -4117,14 +4117,14 @@ li.s_:	.asciiz "Testing LI.s\n"
 	syscall
 
 	li.s $f0, 1.0
-	mfc1 $2, $f0
-	lw $3, fp_s1
-	bne $2, $3, fail
+	mfc1 $v0, $f0
+	lw $v1, fp_s1
+	bne $v0, $v1, fail
 
 	li.s $f0, -1.0
-	mfc1 $2, $f0
-	lw $3, fp_sm1
-	bne $2, $3, fail
+	mfc1 $v0, $f0
+	lw $v1, fp_sm1
+	bne $v0, $v1, fail
 
 
 	.data
@@ -4134,9 +4134,9 @@ move_:	.asciiz "Testing MOVE\n"
 	la $a0, move_
 	syscall
 
-	li $2, 0xfffffff
-	move $3, $2
-	bne $2, $3, fail
+	li $v0, 0xfffffff
+	move $v1, $2
+	bne $v0, $v1, fail
 
 
 # MUL and MULO and MULOU were tested previously
@@ -4149,14 +4149,14 @@ neg_:	.asciiz "Testing NEG\n"
 	la $a0, neg_
 	syscall
 
-	li $2, -101
-	neg $3, $2
-	bne $3, 101, fail
-	li $2, 101
-	neg $2, $2
-	bne $2, -101, fail
-	neg $2, $0
-	bne $2, 0, fail
+	li $v0, -101
+	neg $v1, $2
+	bne $v1, 101, fail
+	li $v0, 101
+	neg $v0, $2
+	bne $v0, -101, fail
+	neg $v0, $0
+	bne $v0, 0, fail
 
 
 	.data
@@ -4166,14 +4166,14 @@ negu_:	.asciiz "Testing NEGU\n"
 	la $a0, negu_
 	syscall
 
-	li $2, -101
-	negu $3, $2
-	bne $3, 101, fail
-	li $2, 101
-	negu $2, $2
-	bne $2, -101, fail
-	negu $2, $0
-	bne $2, 0, fail
+	li $v0, -101
+	negu $v1, $2
+	bne $v1, 101, fail
+	li $v0, 101
+	negu $v0, $2
+	bne $v0, -101, fail
+	negu $v0, $0
+	bne $v0, 0, fail
 
 
 	.data
@@ -4193,14 +4193,14 @@ not_:	.asciiz "Testing NOT\n"
 	la $a0, not_
 	syscall
 
-	not $2, $0
-	bne $2, 0xffffffff, fail
-	li $2, 0
-	not $3, $2
-	bne $3, 0xffffffff, fail
-	li $2, 0xffffffff
-	not $3, $2
-	bne $3, 0, fail
+	not $v0, $0
+	bne $v0, 0xffffffff, fail
+	li $v0, 0
+	not $v1, $2
+	bne $v1, 0xffffffff, fail
+	li $v0, 0xffffffff
+	not $v1, $2
+	bne $v1, 0, fail
 
 
 	.data
@@ -4210,14 +4210,14 @@ rem_:	.asciiz "Testing REM\n"
 	la $a0, rem_
 	syscall
 
-	li $2, 5
-	li $3, 2
-	li $4, -2
+	li $v0, 5
+	li $v1, 2
+	li $a0, -2
 
-	rem $5, $2, $3
+	rem $5, $v0, $3
 	bne $5, 1, fail
 
-	rem $5, $2, $4
+	rem $5, $v0, $4
 	bne $5, 1, fail
 
 	.data
@@ -4227,14 +4227,14 @@ remu_:	.asciiz "Testing REMU\n"
 	la $a0, remu_
 	syscall
 
-	li $2, 5
-	li $3, 2
-	li $4, -2
+	li $v0, 5
+	li $v1, 2
+	li $a0, -2
 
-	remu $5, $2, $3
+	remu $5, $v0, $3
 	bne $5, 1, fail
 
-	remu $5, $2, $4
+	remu $5, $v0, $4
 	bne $5, 5, fail
 
 
@@ -4244,17 +4244,17 @@ rol_:	.asciiz "Testing ROL\n"
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, rol_
 	syscall
-	li $2, 5
-	li $3, 5
-	rol $4, $2, $3
-	bne $4, 0xa0, fail
-	li $2, 5
-	li $3, -5
-	rol $4, $2, $3
-	bne $4, 0x28000000, fail
-	li $2, 5
-	rol $4, $2, 5
-	bne $4, 0xa0, fail
+	li $v0, 5
+	li $v1, 5
+	rol $a0, $v0, $3
+	bne $a0, 0xa0, fail
+	li $v0, 5
+	li $v1, -5
+	rol $a0, $v0, $3
+	bne $a0, 0x28000000, fail
+	li $v0, 5
+	rol $a0, $v0, 5
+	bne $a0, 0xa0, fail
 
 
 	.data
@@ -4263,17 +4263,17 @@ ror_:	.asciiz "Testing ROR\n"
 	li $v0, 4	# syscall 4 (print_str)
 	la $a0, ror_
 	syscall
-	li $2, 5
-	li $3, 5
-	ror $4, $2, $3
-	bne $4, 0x28000000, fail
-	li $2, 5
-	li $3, -5
-	ror $4, $2, $3
-	bne $4, 0xa0, fail
-	li $2, 5
-	ror $4, $2, 5
-	bne $4, 0x28000000, fail
+	li $v0, 5
+	li $v1, 5
+	ror $a0, $v0, $3
+	bne $a0, 0x28000000, fail
+	li $v0, 5
+	li $v1, -5
+	ror $a0, $v0, $3
+	bne $a0, 0xa0, fail
+	li $v0, 5
+	ror $a0, $v0, 5
+	bne $a0, 0x28000000, fail
 
 
 	.data
@@ -4283,18 +4283,18 @@ seq_:	.asciiz "Testing SEQ\n"
 	la $a0, seq_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
-	seq $4, $0, $0
-	beqz $4, fail
-	seq $4, $2, $3
-	bnez $4, fail
+	seq $a0, $0, $0
+	beqz $a0, fail
+	seq $a0, $v0, $3
+	bnez $a0, fail
 
-	seq $4, $0, 0
-	beqz $4, fail
-	seq $4, $3, 2
-	bnez $4, fail
+	seq $a0, $0, 0
+	beqz $a0, fail
+	seq $a0, $v1, 2
+	bnez $a0, fail
 
 
 	.data
@@ -4304,44 +4304,44 @@ sge_:	.asciiz "Testing SGE\n"
 	la $a0, sge_
 	syscall
 
-	sge $4, $0, $0
-	beqz $4, fail
-	li $2, 1
-	sge $4, $0, $2
-	bnez $4, fail
-	sge $4, $2, $0
-	beqz $4, fail
-	li $2, -1
-	sge $4, $0, $2
-	beqz $4, fail
-	sge $4, $2, $0
-	bnez $4, fail
+	sge $a0, $0, $0
+	beqz $a0, fail
+	li $v0, 1
+	sge $a0, $0, $2
+	bnez $a0, fail
+	sge $a0, $v0, $0
+	beqz $a0, fail
+	li $v0, -1
+	sge $a0, $0, $2
+	beqz $a0, fail
+	sge $a0, $v0, $0
+	bnez $a0, fail
 
-	li $2, 1
-	sge $2, $0, $2
-	bnez $2, fail
-	li $2, 1
-	sge $2, $2, $0
-	beqz $2, fail
-	li $2, -1
-	sge $2, $0, $2
-	beqz $2, fail
-	li $2, -1
-	sge $2, $2, $0
-	bnez $2, fail
+	li $v0, 1
+	sge $v0, $0, $2
+	bnez $v0, fail
+	li $v0, 1
+	sge $v0, $v0, $0
+	beqz $v0, fail
+	li $v0, -1
+	sge $v0, $0, $2
+	beqz $v0, fail
+	li $v0, -1
+	sge $v0, $v0, $0
+	bnez $v0, fail
 
-	sge $4, $0, 0
-	beqz $4, fail
-	li $2, 1
-	sge $4, $0, 1
-	bnez $4, fail
-	sge $4, $2, 0
-	beqz $4, fail
-	li $2, -1
-	sge $4, $0, -1
-	beqz $4, fail
-	sge $4, $2, 0
-	bnez $4, fail
+	sge $a0, $0, 0
+	beqz $a0, fail
+	li $v0, 1
+	sge $a0, $0, 1
+	bnez $a0, fail
+	sge $a0, $v0, 0
+	beqz $a0, fail
+	li $v0, -1
+	sge $a0, $0, -1
+	beqz $a0, fail
+	sge $a0, $v0, 0
+	bnez $a0, fail
 
 
 	.data
@@ -4351,31 +4351,31 @@ sgeu_:	.asciiz "Testing SGEU\n"
 	la $a0, sgeu_
 	syscall
 
-	sgeu $4, $0, $0
-	beqz $4, fail
-	li $2, 1
-	sgeu $4, $0, $2
-	bnez $4, fail
-	sgeu $4, $2, $0
-	beqz $4, fail
-	li $2, -1
-	sgeu $4, $0, $2
-	bnez $4, fail
-	sgeu $4, $2, $0
-	beqz $4, fail
+	sgeu $a0, $0, $0
+	beqz $a0, fail
+	li $v0, 1
+	sgeu $a0, $0, $2
+	bnez $a0, fail
+	sgeu $a0, $v0, $0
+	beqz $a0, fail
+	li $v0, -1
+	sgeu $a0, $0, $2
+	bnez $a0, fail
+	sgeu $a0, $v0, $0
+	beqz $a0, fail
 
-	sgeu $4, $0, 0
-	beqz $4, fail
-	li $2, 1
-	sgeu $4, $0, 1
-	bnez $4, fail
-	sgeu $4, $2, 0
-	beqz $4, fail
-	li $2, -1
-	sgeu $4, $0, -1
-	bnez $4, fail
-	sgeu $4, $2, 0
-	beqz $4, fail
+	sgeu $a0, $0, 0
+	beqz $a0, fail
+	li $v0, 1
+	sgeu $a0, $0, 1
+	bnez $a0, fail
+	sgeu $a0, $v0, 0
+	beqz $a0, fail
+	li $v0, -1
+	sgeu $a0, $0, -1
+	bnez $a0, fail
+	sgeu $a0, $v0, 0
+	beqz $a0, fail
 
 
 	.data
@@ -4385,31 +4385,31 @@ sgt_:	.asciiz "Testing SGT\n"
 	la $a0, sgt_
 	syscall
 
-	sgt $4, $0, $0
-	bnez $4, fail
-	li $2, 1
-	sgt $4, $0, $2
-	bnez $4, fail
-	sgt $4, $2, $0
-	beqz $4, fail
-	li $2, -1
-	sgt $4, $0, $2
-	beqz $4, fail
-	sgt $4, $2, $0
-	bnez $4, fail
+	sgt $a0, $0, $0
+	bnez $a0, fail
+	li $v0, 1
+	sgt $a0, $0, $2
+	bnez $a0, fail
+	sgt $a0, $v0, $0
+	beqz $a0, fail
+	li $v0, -1
+	sgt $a0, $0, $2
+	beqz $a0, fail
+	sgt $a0, $v0, $0
+	bnez $a0, fail
 
-	sgt $4, $0, 0
-	bnez $4, fail
-	sgt $4, $0, 1
-	bnez $4, fail
-	li $2, 1
-	sgt $4, $2, 0
-	beqz $4, fail
-	sgt $4, $0, -1
-	beqz $4, fail
-	li $2, -1
-	sgt $4, $2, 0
-	bnez $4, fail
+	sgt $a0, $0, 0
+	bnez $a0, fail
+	sgt $a0, $0, 1
+	bnez $a0, fail
+	li $v0, 1
+	sgt $a0, $v0, 0
+	beqz $a0, fail
+	sgt $a0, $0, -1
+	beqz $a0, fail
+	li $v0, -1
+	sgt $a0, $v0, 0
+	bnez $a0, fail
 
 	.data
 sgtu_:	.asciiz "Testing SGTU\n"
@@ -4418,31 +4418,31 @@ sgtu_:	.asciiz "Testing SGTU\n"
 	la $a0, sgtu_
 	syscall
 
-	sgtu $4, $0, $0
-	bnez $4, fail
-	li $2, 1
-	sgtu $4, $0, $2
-	bnez $4, fail
-	sgtu $4, $2, $0
-	beqz $4, fail
-	li $2, -1
-	sgtu $4, $0, $2
-	bnez $4, fail
-	sgtu $4, $2, $0
-	beqz $4, fail
+	sgtu $a0, $0, $0
+	bnez $a0, fail
+	li $v0, 1
+	sgtu $a0, $0, $2
+	bnez $a0, fail
+	sgtu $a0, $v0, $0
+	beqz $a0, fail
+	li $v0, -1
+	sgtu $a0, $0, $2
+	bnez $a0, fail
+	sgtu $a0, $v0, $0
+	beqz $a0, fail
 
-	sgtu $4, $0, 0
-	bnez $4, fail
-	sgtu $4, $0, 1
-	bnez $4, fail
-	li $2, 1
-	sgtu $4, $2, 0
-	beqz $4, fail
-	sgtu $4, $0, -1
-	bnez $4, fail
-	li $2, -1
-	sgtu $4, $2, 0
-	beqz $4, fail
+	sgtu $a0, $0, 0
+	bnez $a0, fail
+	sgtu $a0, $0, 1
+	bnez $a0, fail
+	li $v0, 1
+	sgtu $a0, $v0, 0
+	beqz $a0, fail
+	sgtu $a0, $0, -1
+	bnez $a0, fail
+	li $v0, -1
+	sgtu $a0, $v0, 0
+	beqz $a0, fail
 
 
 	.data
@@ -4452,44 +4452,44 @@ sle_:	.asciiz "Testing SLE\n"
 	la $a0, sle_
 	syscall
 
-	sle $4, $0, $0
-	beqz $4, fail
-	li $2, 1
-	sle $4, $0, $2
-	beqz $4, fail
-	sle $4, $2, $0
-	bnez $4, fail
-	li $2, -1
-	sle $4, $0, $2
-	bnez $4, fail
-	sle $4, $2, $0
-	beqz $4, fail
+	sle $a0, $0, $0
+	beqz $a0, fail
+	li $v0, 1
+	sle $a0, $0, $2
+	beqz $a0, fail
+	sle $a0, $v0, $0
+	bnez $a0, fail
+	li $v0, -1
+	sle $a0, $0, $2
+	bnez $a0, fail
+	sle $a0, $v0, $0
+	beqz $a0, fail
 
-	li $2, 1
-	sle $2, $0, $2
-	beqz $2, fail
-	li $2, 1
-	sle $2, $2, $0
-	bnez $2, fail
-	li $2, -1
-	sle $2, $0, $2
-	bnez $2, fail
-	li $2, -1
-	sle $2, $2, $0
-	beqz $2, fail
+	li $v0, 1
+	sle $v0, $0, $2
+	beqz $v0, fail
+	li $v0, 1
+	sle $v0, $v0, $0
+	bnez $v0, fail
+	li $v0, -1
+	sle $v0, $0, $2
+	bnez $v0, fail
+	li $v0, -1
+	sle $v0, $v0, $0
+	beqz $v0, fail
 
-	sle $4, $0, 0
-	beqz $4, fail
-	li $2, 1
-	sle $4, $0, 1
-	beqz $4, fail
-	sle $4, $2, 0
-	bnez $4, fail
-	li $2, -1
-	sle $4, $0, -1
-	bnez $4, fail
-	sle $4, $2, 0
-	beqz $4, fail
+	sle $a0, $0, 0
+	beqz $a0, fail
+	li $v0, 1
+	sle $a0, $0, 1
+	beqz $a0, fail
+	sle $a0, $v0, 0
+	bnez $a0, fail
+	li $v0, -1
+	sle $a0, $0, -1
+	bnez $a0, fail
+	sle $a0, $v0, 0
+	beqz $a0, fail
 
 
 	.data
@@ -4499,31 +4499,31 @@ sleu_:	.asciiz "Testing SLEU\n"
 	la $a0, sleu_
 	syscall
 
-	sleu $4, $0, $0
-	beqz $4, fail
-	li $2, 1
-	sleu $4, $0, $2
-	beqz $4, fail
-	sleu $4, $2, $0
-	bnez $4, fail
-	li $2, -1
-	sleu $4, $0, $2
-	beqz $4, fail
-	sleu $4, $2, $0
-	bnez $4, fail
+	sleu $a0, $0, $0
+	beqz $a0, fail
+	li $v0, 1
+	sleu $a0, $0, $2
+	beqz $a0, fail
+	sleu $a0, $v0, $0
+	bnez $a0, fail
+	li $v0, -1
+	sleu $a0, $0, $2
+	beqz $a0, fail
+	sleu $a0, $v0, $0
+	bnez $a0, fail
 
-	sleu $4, $0, 0
-	beqz $4, fail
-	li $2, 1
-	sleu $4, $0, 1
-	beqz $4, fail
-	sleu $4, $2, 0
-	bnez $4, fail
-	li $2, -1
-	sleu $4, $0, -1
-	beqz $4, fail
-	sleu $4, $2, 0
-	bnez $4, fail
+	sleu $a0, $0, 0
+	beqz $a0, fail
+	li $v0, 1
+	sleu $a0, $0, 1
+	beqz $a0, fail
+	sleu $a0, $v0, 0
+	bnez $a0, fail
+	li $v0, -1
+	sleu $a0, $0, -1
+	beqz $a0, fail
+	sleu $a0, $v0, 0
+	bnez $a0, fail
 
 
 	.data
@@ -4533,18 +4533,18 @@ sne_:	.asciiz "Testing SNE\n"
 	la $a0, sne_
 	syscall
 
-	li $2, -1
-	li $3, 1
+	li $v0, -1
+	li $v1, 1
 
-	sne $4, $0, $0
-	bnez $4, fail
-	sne $4, $2, $3
-	beqz $4, fail
+	sne $a0, $0, $0
+	bnez $a0, fail
+	sne $a0, $v0, $3
+	beqz $a0, fail
 
-	sne $4, $0, 0
-	bnez $4, fail
-	sne $4, $3, 2
-	beqz $4, fail
+	sne $a0, $0, 0
+	bnez $a0, fail
+	sne $a0, $v1, 2
+	beqz $a0, fail
 
 
 # ULH is endian-specific

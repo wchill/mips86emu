@@ -128,8 +128,8 @@ void instr_set_less_than_immutable_unsigned(i_inst params) {
 }
 
 void instr_unimplemented_i(i_inst params) {
-    printf("Opcode 0x%02x unimplemented\n", params.opcode);
-    printf("I-type instruction: 0x%08x @ 0x%08x\n", params.instruction, pc);
+    printf("Unimplemented instruction 0x%08x @ 0x%08x\n", params.instruction, pc);
+    printf("Opcode: 0x%02x\nrs: 0x%02x\nrt: 0x%02x\nimm: 0x%02x\n", params.opcode, params.rs, params.rt, params.immediate);
 }
 
 void (*i_inst_table[])(i_inst) = {
@@ -153,15 +153,15 @@ void (*i_inst_table[])(i_inst) = {
     instr_cop_z,                    // 0x11 - OP_Z1
     instr_cop_z,                    // 0x12 - OP_Z2
     instr_cop_z,                    // 0x13 - OP_Z3
-    instr_unimplemented_i,
-    instr_unimplemented_i,
-    instr_unimplemented_i,
-    instr_unimplemented_i,
-    instr_unimplemented_i,
-    instr_unimplemented_i,
-    instr_unimplemented_i,
-    instr_unimplemented_i,
-    instr_unimplemented_i,          // 0x1c - OP_SPECIAL2
+    instr_unimplemented_i,          // 0x14
+    instr_unimplemented_i,          // 0x15
+    instr_unimplemented_i,          // 0x16
+    instr_unimplemented_i,          // 0x17
+    instr_unimplemented_i,          // 0x18
+    instr_unimplemented_i,          // 0x19
+    instr_unimplemented_i,          // 0x1a
+    instr_unimplemented_i,          // 0x1b
+    instr_unimplemented_i,          // 0x1c - OP_SPECIAL2 (r-type)
     instr_unimplemented_i,          // 0x1d - OP_JALX
     instr_unimplemented_i,
     instr_unimplemented_i,          // 0x1f - OP_SPECIAL3

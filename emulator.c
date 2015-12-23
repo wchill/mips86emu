@@ -102,10 +102,15 @@ int main(int argc, char *argv[]) {
         uint8_t opcode = (uint8_t) (instruction >> 26);
 
         // R type instruction
+        printf("Executing instruction 0x%08x at 0x%08x\n", instruction, pc);
         if(opcode == OP_OTHER0) {
             r_inst params;
             parse_r_inst(instruction, &params);
             (*r_inst_table[params.funct])(params);
+        } else if(opcode == OP_SPECIAL2) {
+            r_inst params;
+            parse_r_inst(instruction, &params);
+            (*special_two_inst_table[params.funct])(params);
         } else if(opcode == OP_J || opcode == OP_JAL) {
             uint32_t imm_addr = j_inst(instruction);
             if(opcode == OP_JAL) {
