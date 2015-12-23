@@ -106,6 +106,15 @@ private:
 
     inline inst_params parse_instruction(uint32_t instruction);
 
+    void branch(uint16_t immediate) {
+        cout << "    - Branching: executing branch delay slot" << endl;
+        execute(get_next_instruction());
+        uint32_t branch_addr = ((uint32_t) immediate) << 2;
+        branch_addr |= (uint32_t) (0xFFFC0000 * (immediate >> 15));
+        pc = (uint32_t) ((int32_t) pc + (int32_t) branch_addr) - 4;
+        cout << fmt::sprintf("    - Branching: jumping to %#08x", pc) << endl;
+    }
+
 public:
     MIPS32_Cpu(bool little_endian = false);
     ~MIPS32_Cpu();

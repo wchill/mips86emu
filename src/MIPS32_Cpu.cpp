@@ -57,27 +57,32 @@ void MIPS32_Cpu::tick() {
 }
 
 void MIPS32_Cpu::execute(uint32_t instruction) {
-    inst_params params = parse_instruction(instruction);
-    switch(params.opcode) {
-        case OP_OTHER0:
-            switch(params.funct) {
+    cout << fmt::sprintf("  - Executing instruction @ %#08x: %#08x", pc, instruction) << endl;
+    if (instruction != 0) {
+        inst_params params = parse_instruction(instruction);
+        switch (params.opcode) {
+            case OP_OTHER0:
+                switch (params.funct) {
                 #include "instructions/arithmetic.h"
                 #include "instructions/shift.h"
                 #include "instructions/logical.h"
                 #include "instructions/jump_reg.h"
                 #include "instructions/syscall.h"
-                default:
-                    cerr << fmt::sprintf("Unimplemented funct @ %08x: %#02x", pc, params.funct) << endl;
-            }
-            break;
-        #include "instructions/immutable.h"
-#include "instructions/loadstore.h"
-        #include "instructions/jump.h"
-        case OP_SPECIAL2:
-            break;
-        default:
-            cerr << fmt::sprintf("Unimplemented opcode @ %#08x: %#02x", pc, params.opcode) << endl;
-            // I-type
+                    default:
+                        cerr << fmt::sprintf("Unimplemented funct @ %#08x: %#02x", pc, params.funct) << endl;
+                }
+                break;
+            #include "instructions/immutable.h"
+            #include "instructions/loadstore.h"
+            #include "instructions/branch.h"
+            #include "instructions/jump.h"
+#include "instructions/branch_other.h"
+            case OP_SPECIAL2:
+                break;
+            default:
+                cerr << fmt::sprintf("Unimplemented opcode @ %#08x: %#02x", pc, params.opcode) << endl;
+                // I-type
+        }
+        //pc += 4 * !branch_taken;
     }
-    //pc += 4 * !branch_taken;
 }
