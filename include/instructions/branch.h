@@ -1,0 +1,9 @@
+#ifndef MIPS86CORE_BRANCH_H
+#define MIPS86CORE_BRANCH_H
+
+case OP_BEQ:
+case OP_BNE:
+case OP_BLEZ:
+case OP_BGTZ:
+
+#endif //MIPS86CORE_BRANCH_H

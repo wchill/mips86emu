@@ -13,42 +13,21 @@ MIPS32_Cpu::~MIPS32_Cpu() {
     memory_mapped_devices.clear();
 }
 
-inline void MIPS32_Cpu::write_reg(int reg, uint32_t word) {
-    // Bitwise ANDing with ~((reg != 0) - 1) means all writes to $0 will be 0
-    registers[reg] = word & ~((reg != 0) - 1);
-}
-
-inline void MIPS32_Cpu::write_reg(int reg, int32_t word) {
-    // Bitwise ANDing with ~((reg != 0) - 1) means all writes to $0 will be 0
-    registers[reg] = static_cast<uint32_t>(word) & ~((reg != 0) - 1);
-}
-
-inline int32_t MIPS32_Cpu::read_reg_signed(int reg) {
-    return static_cast<int32_t>(registers[reg]);
-}
-
-inline uint32_t MIPS32_Cpu::read_reg_unsigned(int reg) {
-    return registers[reg];
-}
-
-void MIPS32_Cpu::parse_instruction(uint32_t instruction, r_inst *r_params, i_inst *i_params, j_inst *j_params) {
-    r_params->instruction = instruction;
-    r_params->opcode = (uint8_t) ((instruction >> 26) & 0b111111);
-    r_params->rs = (uint8_t) ((instruction >> 21) & 0b11111);
-    r_params->rt = (uint8_t) ((instruction >> 16) & 0b11111);
-    r_params->rd = (uint8_t) ((instruction >> 11) & 0b11111);
-    r_params->shamt = (uint8_t) ((instruction >> 6) & 0b11111);
-    r_params->funct = (uint8_t) (instruction & 0b111111);
-
-    i_params->instruction = instruction;
-    i_params->opcode = r_params->opcode;
-    i_params->rs = r_params->rs;
-    i_params->rt = r_params->rt;
-    i_params->immediate = (uint16_t) (instruction & 0xffff);
-    i_params->sign_ext_imm = (uint32_t) (0xFFFF0000 * (i_params->immediate >> 15) + i_params->immediate);
-
-    j_params->instruction = instruction;
-    j_params->opcode = r_params->opcode;
+inline inst_params MIPS32_Cpu::parse_instruction(uint32_t instruction) {
+    inst_params params;
+    params.instruction = instruction;
+    params.opcode = static_cast<uint8_t>((instruction >> 26) & 0b111111);
+    params.rs = static_cast<uint8_t>((instruction >> 21) & 0b11111);
+    params.rt = static_cast<uint8_t>((instruction >> 16) & 0b11111);
+    params.rd = static_cast<uint8_t>((instruction >> 11) & 0b11111);
+    params.shamt = static_cast<uint8_t>((instruction >> 6) & 0b11111);
+    params.funct = static_cast<uint8_t>(instruction & 0b111111);
+    params.immediate = static_cast<uint16_t>(instruction & 0xffff);
+    params.signed_imm = static_cast<int16_t>(params.immediate);
+    params.sign_ext_imm = static_cast<uint32_t>((0xFFFF0000 & ~((params.immediate >> 15 != 0) - 1)) + params.immediate);
+    params.signed_sign_ext_imm = static_cast<int32_t>(params.sign_ext_imm);
+    params.target = (pc & 0xf0000000) | ((instruction & 0x3ffffff) << 2);
+    return params;
 }
 
 void MIPS32_Cpu::reset() {
@@ -61,7 +40,7 @@ void MIPS32_Cpu::reset() {
     write_reg(R_GP, DYNAMIC_BOTTOM);
     // start of text segment
     // temporarily set to 0x400018 until I figure out the ELF format
-    pc = MEMORY_TEXT + 24;
+    pc = MEMORY_TEXT + 20;
 }
 
 void MIPS32_Cpu::add_memory_mapped_device(std::shared_ptr<MemoryMappedDevice> device) {
@@ -74,31 +53,31 @@ SharedMemory MIPS32_Cpu::get_cpu_memory() {
 }
 
 void MIPS32_Cpu::tick() {
-    // big endian
-    uint32_t instruction = __bswap_32(memory->read_word(pc));
+    execute(get_next_instruction());
+}
 
-    uint8_t opcode = (uint8_t) (instruction >> 26);
-
-    r_inst r_params;
-    i_inst i_params;
-    j_inst j_params;
-
-    //printf("Executing instruction 0x%08x at 0x%08x\n", instruction, pc);
-    switch(opcode) {
+void MIPS32_Cpu::execute(uint32_t instruction) {
+    inst_params params = parse_instruction(instruction);
+    switch(params.opcode) {
         case OP_OTHER0:
-            switch(r_params.funct) {
+            switch(params.funct) {
                 #include "instructions/arithmetic.h"
+                #include "instructions/shift.h"
+                #include "instructions/logical.h"
+                #include "instructions/jump_reg.h"
+                #include "instructions/syscall.h"
                 default:
-                    cerr << "Unimplemented opcode";
+                    cerr << fmt::sprintf("Unimplemented funct @ %08x: %#02x", pc, params.funct) << endl;
             }
             break;
+        #include "instructions/immutable.h"
+#include "instructions/loadstore.h"
+        #include "instructions/jump.h"
         case OP_SPECIAL2:
             break;
-        case OP_J:
-            break;
-        case OP_JAL:
-            break;
-        // I-type
+        default:
+            cerr << fmt::sprintf("Unimplemented opcode @ %#08x: %#02x", pc, params.opcode) << endl;
+            // I-type
     }
     //pc += 4 * !branch_taken;
 }
