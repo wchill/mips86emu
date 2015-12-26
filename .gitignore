@@ -4,3 +4,4 @@ bin
 .DS_Store
 thumbs.db
 .idea
+*.hex
