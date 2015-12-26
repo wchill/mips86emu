@@ -1,10 +1,12 @@
-#include <MIPS32_Cpu.h>
-#include <iostream>
 #include "MIPS32_Cpu.h"
 
 // TODO: Support little endian memory access
 MIPS32_Cpu::MIPS32_Cpu(bool little_endian) : little_endian(little_endian) {
     memory = std::make_shared<Memory>();
+    coprocessors[0] = new MIPS32_Coprocessor0(memory);
+    coprocessors[1] = new MIPS32_Coprocessor1(memory);
+    coprocessors[2] = NULL;
+    coprocessors[3] = NULL;
     reset();
 }
 
@@ -13,26 +15,14 @@ MIPS32_Cpu::~MIPS32_Cpu() {
     memory_mapped_devices.clear();
 }
 
-inline inst_params MIPS32_Cpu::parse_instruction(uint32_t instruction) {
-    inst_params params;
-    params.instruction = instruction;
-    params.opcode = static_cast<uint8_t>((instruction >> 26) & 0b111111);
-    params.rs = static_cast<uint8_t>((instruction >> 21) & 0b11111);
-    params.rt = static_cast<uint8_t>((instruction >> 16) & 0b11111);
-    params.rd = static_cast<uint8_t>((instruction >> 11) & 0b11111);
-    params.shamt = static_cast<uint8_t>((instruction >> 6) & 0b11111);
-    params.funct = static_cast<uint8_t>(instruction & 0b111111);
-    params.immediate = static_cast<uint16_t>(instruction & 0xffff);
-    params.signed_imm = static_cast<int16_t>(params.immediate);
-    params.sign_ext_imm = static_cast<uint32_t>((0xFFFF0000 & ~((params.immediate >> 15 != 0) - 1)) + params.immediate);
-    params.signed_sign_ext_imm = static_cast<int32_t>(params.sign_ext_imm);
-    params.target = (pc & 0xf0000000) | ((instruction & 0x3ffffff) << 2);
-    return params;
-}
-
 void MIPS32_Cpu::reset() {
     for(auto it = memory_mapped_devices.begin(); it != memory_mapped_devices.end(); ++it) {
         (*it)->reset();
+    }
+    for (int i = 0; i < 4; ++i) {
+        if (coprocessors[i] != NULL) {
+            coprocessors[i]->reset();
+        }
     }
     memory->clear_memory();
     std::fill(registers, registers + NUM_REGISTERS, 0);
@@ -59,7 +49,7 @@ void MIPS32_Cpu::tick() {
 void MIPS32_Cpu::execute(uint32_t instruction) {
     cout << fmt::sprintf("  - Executing instruction @ %#08x: %#08x", pc, instruction) << endl;
     if (instruction != 0) {
-        inst_params params = parse_instruction(instruction);
+        Instruction params(instruction, pc);
         switch (params.opcode) {
             case OP_OTHER0:
                 switch (params.funct) {
@@ -76,8 +66,12 @@ void MIPS32_Cpu::execute(uint32_t instruction) {
             #include "instructions/loadstore.h"
             #include "instructions/branch.h"
             #include "instructions/jump.h"
-#include "instructions/branch_other.h"
+            #include "instructions/coprocessor.h"
+            #include "instructions/branch_other.h"
             case OP_SPECIAL2:
+                switch (params.funct) {
+#include "instructions/special2.h"
+                }
                 break;
             default:
                 cerr << fmt::sprintf("Unimplemented opcode @ %#08x: %#02x", pc, params.opcode) << endl;

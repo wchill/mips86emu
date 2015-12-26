@@ -140,6 +140,15 @@
 #define OP0_SLT     0x2a
 #define OP0_SLTU    0x2b
 
+// Secondary opcodes (funct2 field; OP_SPECIAL2)
+#define OP2_MADD    0x00
+#define OP2_MADDU   0x01
+#define OP2_MUL     0x02
+#define OP2_MSUB    0x04
+#define OP2_MSUBU   0x05
+#define OP2_CLZ     0x20
+#define OP2_CLO     0x21
+
 // Tertiary opcodes (funct2 field; OP_Z1 && (OPZ_COPZS || OPZ_COPZD))
 #define OPF_ADDF    0x00
 #define OPF_SUBF    0x01

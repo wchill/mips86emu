@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include "Instruction.h"
+#include "MIPS32_Coprocessor.h"
+#include "MIPS32_Coprocessor0.h"
+#include "MIPS32_Coprocessor1.h"
 #include "MemoryMappedDevice.h"
 #include "Memory.h"
 #include "mips.h"
@@ -49,21 +53,6 @@ using std::endl;
 #define R_FP    30  // Frame pointer
 #define R_RA    31  // Return address
 
-typedef struct {
-    uint32_t instruction;
-    uint8_t opcode;
-    uint8_t rs;
-    uint8_t rt;
-    uint8_t rd;
-    uint8_t shamt;
-    uint8_t funct;
-    uint16_t immediate;
-    int16_t signed_imm;
-    uint32_t sign_ext_imm;
-    int32_t signed_sign_ext_imm;
-    uint32_t target;
-} inst_params;
-
 class MIPS32_Cpu {
 private:
     bool little_endian = false;
@@ -71,6 +60,7 @@ private:
     uint32_t registers[NUM_REGISTERS];
     uint64_t acc;
     SharedMemory memory;
+    MIPS32_Coprocessor *coprocessors[4];
 
     // temporary storage for functions
     uint8_t bytes[4];
@@ -81,7 +71,7 @@ private:
     std::vector<std::shared_ptr<MemoryMappedDevice>> memory_mapped_devices;
 
     inline uint16_t __bswap_16(uint16_t x) { return (x>>8) | (x<<8); }
-    inline uint32_t __bswap_32(uint32_t x) { return (__bswap_16(x&0xffff)<<16) | (__bswap_16(x>>16)); }
+    inline uint32_t __bswap_32(uint32_t x) { return (static_cast<uint32_t>(__bswap_16(static_cast<uint16_t>(x&0xffff)))<<16) | (__bswap_16(static_cast<uint16_t>(x>>16))); }
 
     // Bitwise ANDing with ~((reg != 0) - 1) means all writes to $0 will be 0
     inline void write_reg(int reg, uint32_t word) { registers[reg] = word & ~((reg != 0) - 1); }
@@ -104,8 +94,6 @@ private:
     // TODO: Set proper endianness at compile time
     inline uint32_t get_next_instruction() { return __bswap_32(memory->read_word(pc += 4)); }
 
-    inline inst_params parse_instruction(uint32_t instruction);
-
     void branch(uint16_t immediate) {
         cout << "    - Branching: executing branch delay slot" << endl;
         execute(get_next_instruction());
@@ -117,7 +105,7 @@ private:
 
 public:
     MIPS32_Cpu(bool little_endian = false);
-    ~MIPS32_Cpu();
+    virtual ~MIPS32_Cpu();
 
     void reset();
     void add_memory_mapped_device(std::shared_ptr<MemoryMappedDevice> device);

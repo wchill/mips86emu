@@ -9,7 +9,9 @@ private:
 public:
     MemoryMappedDevice(SharedMemory memory) : memory(memory) {};
 
-    virtual ~MemoryMappedDevice() {};
+    virtual ~MemoryMappedDevice() {
+        memory.reset();
+    };
 
     virtual void tick() = 0;
     virtual void reset() = 0;
