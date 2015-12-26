@@ -26,11 +26,23 @@ case OP0_MULTU:
     break;
 
 case OP0_DIV:
-    write_lo(read_reg_signed(params.rs) / read_reg_signed(params.rt));
-    write_hi(read_reg_signed(params.rs) % read_reg_signed(params.rt));
+    words_s[0] = read_reg_signed(params.rs);
+    words_s[1] = read_reg_signed(params.rt);
+    if(words_s[1] == 0) throw std::runtime_error(fmt::sprintf("Signed divide by 0 @ %#08x", pc));
+    dwords_s[0] = static_cast<int64_t>(words_s[0]) / static_cast<int64_t>(words_s[1]);
+    dwords_s[1] = static_cast<int64_t>(words_s[0]) % static_cast<int64_t>(words_s[1]);
+    if(dwords_s[0] == 2147483648) {
+        cerr << fmt::sprintf("Warning: signed division overflow @ %#08x", pc) << endl;
+        dwords_s[0] = 0;
+    }
+    write_lo(static_cast<int32_t>(dwords_s[0]));
+    write_hi(static_cast<int32_t>(dwords_s[1]));
     break;
 
 case OP0_DIVU:
+    words[0] = read_reg_unsigned(params.rs);
+    words[1] = read_reg_unsigned(params.rt);
+    if(words[1] == 0) throw std::runtime_error(fmt::sprintf("Unsigned divide by 0 @ %#08x", pc));
     write_lo(read_reg_unsigned(params.rs) / read_reg_unsigned(params.rt));
     write_hi(read_reg_unsigned(params.rs) % read_reg_unsigned(params.rt));
     break;

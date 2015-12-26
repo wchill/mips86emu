@@ -53,11 +53,11 @@ void MIPS32_Cpu::execute(uint32_t instruction) {
         switch (params.opcode) {
             case OP_OTHER0:
                 switch (params.funct) {
-                #include "instructions/arithmetic.h"
-                #include "instructions/shift.h"
-                #include "instructions/logical.h"
-                #include "instructions/jump_reg.h"
-                #include "instructions/syscall.h"
+                    #include "instructions/arithmetic.h"
+                    #include "instructions/shift.h"
+                    #include "instructions/logical.h"
+                    #include "instructions/jump_reg.h"
+                    #include "instructions/syscall.h"
                     default:
                         cerr << fmt::sprintf("Unimplemented funct @ %#08x: %#02x", pc, params.funct) << endl;
                 }
@@ -70,7 +70,7 @@ void MIPS32_Cpu::execute(uint32_t instruction) {
             #include "instructions/branch_other.h"
             case OP_SPECIAL2:
                 switch (params.funct) {
-#include "instructions/special2.h"
+                    #include "instructions/special2.h"
                 }
                 break;
             default:
