@@ -19,13 +19,27 @@ private:
     unsigned int allocated_pages;
     unsigned int max_pages;
 
+    bool little_endian;
+
     void memory_init(uint64_t max_memory);
     unsigned int get_page_num(uint32_t virtual_addr);
     void allocate_page(unsigned int page);
+
+    inline bool is_little_endian() {
+        short int word = 0x0001;
+        char *byte = (char *) &word;
+        return(byte[0] != 0);
+    }
+
+    inline uint16_t __bswap_16(uint16_t x) { return (x>>8) | (x<<8); }
+    uint32_t __bswap_32(uint32_t x) { return (static_cast<uint32_t>(__bswap_16(static_cast<uint16_t>(x&0xffff)))<<16) | (__bswap_16(static_cast<uint16_t>(x>>16))); }
+    uint32_t swap_endian(uint32_t x);
 public:
     Memory();
     Memory(uint64_t max_memory);
     ~Memory();
+
+    void set_endianness(bool use_little_endian);
 
     void clear_memory();
 

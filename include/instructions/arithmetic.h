@@ -28,7 +28,7 @@ case OP0_MULTU:
 case OP0_DIV:
     words_s[0] = read_reg_signed(params.rs);
     words_s[1] = read_reg_signed(params.rt);
-    if(words_s[1] == 0) throw std::runtime_error(fmt::sprintf("Signed divide by 0 @ %#08x", pc));
+    if(words_s[1] == 0) throw CpuException(instruction, pc);
     dwords_s[0] = static_cast<int64_t>(words_s[0]) / static_cast<int64_t>(words_s[1]);
     dwords_s[1] = static_cast<int64_t>(words_s[0]) % static_cast<int64_t>(words_s[1]);
     if(dwords_s[0] == 2147483648) {
@@ -42,7 +42,7 @@ case OP0_DIV:
 case OP0_DIVU:
     words[0] = read_reg_unsigned(params.rs);
     words[1] = read_reg_unsigned(params.rt);
-    if(words[1] == 0) throw std::runtime_error(fmt::sprintf("Unsigned divide by 0 @ %#08x", pc));
+    if(words[1] == 0) throw CpuException(instruction, pc);
     write_lo(read_reg_unsigned(params.rs) / read_reg_unsigned(params.rt));
     write_hi(read_reg_unsigned(params.rs) % read_reg_unsigned(params.rt));
     break;

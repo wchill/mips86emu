@@ -8,6 +8,7 @@
 #include "MIPS32_Coprocessor.h"
 #include "MIPS32_Coprocessor0.h"
 #include "MIPS32_Coprocessor1.h"
+#include "exceptions/CpuException.h"
 #include "MemoryMappedDevice.h"
 #include "Memory.h"
 #include "mips.h"
@@ -56,6 +57,7 @@ using std::endl;
 class MIPS32_Cpu {
 private:
     bool little_endian = false;
+    uint32_t last_pc;
     uint32_t pc;
     uint32_t registers[NUM_REGISTERS];
     uint64_t acc;
@@ -73,9 +75,6 @@ private:
     int64_t dwords_s[4];
 
     std::vector<std::shared_ptr<MemoryMappedDevice>> memory_mapped_devices;
-
-    inline uint16_t __bswap_16(uint16_t x) { return (x>>8) | (x<<8); }
-    inline uint32_t __bswap_32(uint32_t x) { return (static_cast<uint32_t>(__bswap_16(static_cast<uint16_t>(x&0xffff)))<<16) | (__bswap_16(static_cast<uint16_t>(x>>16))); }
 
     // Bitwise ANDing with ~((reg != 0) - 1) means all writes to $0 will be 0
     inline void write_reg(int reg, uint32_t word) { registers[reg] = word & ~((reg != 0) - 1); }
@@ -96,16 +95,16 @@ private:
     inline uint32_t read_lo_unsigned() { return static_cast<uint32_t>(acc & 0xFFFFFFFF); }
 
     // TODO: Set proper endianness at compile time
-    inline uint32_t get_next_instruction() { return __bswap_32(memory->read_word(pc += 4)); }
+    inline uint32_t get_next_instruction() { return memory->read_word(pc += 4); }
 
     void branch(uint16_t immediate) {
         uint32_t branch_addr = ((uint32_t) immediate) << 2;
         branch_addr |= (uint32_t) (0xFFFC0000 * (immediate >> 15));
         uint32_t new_pc = (uint32_t) ((int32_t) pc + (int32_t) branch_addr);
-        cout << "    - Branching: executing branch delay slot" << endl;
-        execute(get_next_instruction());
+        //cout << "    - Branching: executing branch delay slot" << endl;
+        tick();
         pc = new_pc;
-        cout << fmt::sprintf("    - Branching: jumping to %#08x", pc + 4) << endl;
+        //cout << fmt::sprintf("    - Branching: jumping to %#08x", pc + 4) << endl;
     }
 
 public:

@@ -2,14 +2,14 @@
 #define MIPS86CORE_JUMP_REG_H
 
 case OP0_JALR:
-    execute(get_next_instruction());
-    words[0] = pc + 4;
+    words[0] = pc + 8;
+    tick();
     pc = read_reg_unsigned(params.rs) - 4;
-    write_reg(R_RA, words[0]);
+    write_reg(params.rd, words[0]);
     break;
 
 case OP0_JR:
-    execute(get_next_instruction());
+    tick();
     pc = read_reg_unsigned(params.rs) - 4;
     break;
 
