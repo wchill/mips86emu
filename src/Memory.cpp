@@ -24,9 +24,17 @@ void Memory::set_endianness(bool use_little_endian) {
     little_endian = use_little_endian;
 }
 
-uint32_t Memory::swap_endian(uint32_t x) {
+uint32_t Memory::swap_endian_32(uint32_t x) {
     if(little_endian != is_little_endian()) {
         return __bswap_32(x);
+    } else {
+        return x;
+    }
+}
+
+uint16_t Memory::swap_endian_16(uint16_t x) {
+    if(little_endian != is_little_endian()) {
+        return __bswap_16(x);
     } else {
         return x;
     }
@@ -73,7 +81,18 @@ uint32_t Memory::read_word(uint32_t addr) {
     } else if (addr & ~ADDR_ALIGN_MASK) {
         throw std::runtime_error(fmt::sprintf("Unaligned read word @ %#08x", addr));
     }
-    return swap_endian(*(reinterpret_cast<uint32_t*>(get_physical_addr(addr))));
+    return swap_endian_32(*(reinterpret_cast<uint32_t*>(get_physical_addr(addr))));
+}
+
+uint16_t Memory::read_short(uint32_t addr) {
+    unsigned int page_num = get_page_num(addr);
+    unsigned int offset = addr & 0xFFF;
+    if(page_num >= max_pages || memory_pages[page_num] == NULL) {
+        throw std::runtime_error(fmt::sprintf("Invalid read short @ %#08x", addr));
+    } else if (addr & 0x1) {
+        throw std::runtime_error(fmt::sprintf("Unaligned read short @ %#08x", addr));
+    }
+    return swap_endian_16(*(reinterpret_cast<uint16_t*>(get_physical_addr(addr))));
 }
 
 uint8_t Memory::read_byte(uint32_t addr) {
@@ -108,7 +127,19 @@ void Memory::write_word(uint32_t addr, uint32_t word) {
         throw std::runtime_error(fmt::sprintf("Unaligned write word @ %#08x", addr));
     }
     allocate_page(page_num);
-    *(reinterpret_cast<uint32_t*>(memory_pages[page_num] + offset)) = swap_endian(word);
+    *(reinterpret_cast<uint32_t*>(memory_pages[page_num] + offset)) = swap_endian_32(word);
+}
+
+void Memory::write_short(uint32_t addr, uint16_t data) {
+    unsigned int page_num = get_page_num(addr);
+    unsigned int offset = addr & 0xFFF;
+    if(page_num >= max_pages || memory_pages[page_num] == NULL) {
+        throw std::runtime_error(fmt::sprintf("Invalid write short @ %#08x", addr));
+    } else if (addr & 0x1) {
+        throw std::runtime_error(fmt::sprintf("Unaligned write short @ %#08x", addr));
+    }
+    allocate_page(page_num);
+    *(reinterpret_cast<uint16_t*>(memory_pages[page_num] + offset)) = swap_endian_16(data);
 }
 
 void Memory::write_byte(uint32_t addr, uint8_t word) {

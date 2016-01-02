@@ -42,21 +42,22 @@ SharedMemory MIPS32_Cpu::get_cpu_memory() {
     return memory;
 }
 
-void MIPS32_Cpu::tick() {
+bool MIPS32_Cpu::tick() {
     try {
         last_pc = pc;
         execute(get_next_instruction());
     } catch(const CpuException &e) {
         cerr << e.what() << endl;
-        cerr << "Press Enter to continue..." << endl;
-        cin.get();
+        //cerr << "Press Enter to continue..." << endl;
+        //cin.get();
         pc = e.pc;
     } catch(const std::runtime_error &e) {
         cerr << e.what() << endl;
-        cerr << "Press Enter to continue..." << endl;
-        cin.get();
+        //cerr << "Press Enter to continue..." << endl;
+        //cin.get();
         pc = (last_pc & 0xfffffffc) + 4;
     }
+    return true;
 }
 
 void MIPS32_Cpu::execute(uint32_t instruction) {
@@ -85,6 +86,5 @@ void MIPS32_Cpu::execute(uint32_t instruction) {
 
         default:
             cerr << fmt::sprintf("Unimplemented opcode @ %#08x: %#02x", pc, params.opcode) << endl;
-            // I-type
     }
 }

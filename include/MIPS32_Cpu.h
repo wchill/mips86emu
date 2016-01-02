@@ -9,6 +9,7 @@
 #include "MIPS32_Coprocessor0.h"
 #include "MIPS32_Coprocessor1.h"
 #include "exceptions/CpuException.h"
+#include "exceptions/ArithmeticException.h"
 #include "MemoryMappedDevice.h"
 #include "Memory.h"
 #include "mips.h"
@@ -57,6 +58,7 @@ using std::endl;
 class MIPS32_Cpu {
 private:
     bool little_endian = false;
+    bool load_linked = false;
     uint32_t last_pc;
     uint32_t pc;
     uint32_t registers[NUM_REGISTERS];
@@ -102,6 +104,7 @@ private:
         branch_addr |= (uint32_t) (0xFFFC0000 * (immediate >> 15));
         uint32_t new_pc = (uint32_t) ((int32_t) pc + (int32_t) branch_addr);
         //cout << "    - Branching: executing branch delay slot" << endl;
+        // TODO: handle return code from tick
         tick();
         pc = new_pc;
         //cout << fmt::sprintf("    - Branching: jumping to %#08x", pc + 4) << endl;
@@ -115,7 +118,7 @@ public:
     void add_memory_mapped_device(std::shared_ptr<MemoryMappedDevice> device);
     SharedMemory get_cpu_memory();
 
-    void tick();
+    bool tick();
     void execute(uint32_t instruction);
 };
 

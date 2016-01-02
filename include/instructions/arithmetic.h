@@ -42,7 +42,7 @@ case OP0_DIV:
 case OP0_DIVU:
     words[0] = read_reg_unsigned(params.rs);
     words[1] = read_reg_unsigned(params.rt);
-    if(words[1] == 0) throw CpuException(instruction, pc);
+    if(words[1] == 0) throw ArithmeticException(instruction, pc);
     write_lo(read_reg_unsigned(params.rs) / read_reg_unsigned(params.rt));
     write_hi(read_reg_unsigned(params.rs) % read_reg_unsigned(params.rt));
     break;

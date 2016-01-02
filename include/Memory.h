@@ -33,7 +33,8 @@ private:
 
     inline uint16_t __bswap_16(uint16_t x) { return (x>>8) | (x<<8); }
     uint32_t __bswap_32(uint32_t x) { return (static_cast<uint32_t>(__bswap_16(static_cast<uint16_t>(x&0xffff)))<<16) | (__bswap_16(static_cast<uint16_t>(x>>16))); }
-    uint32_t swap_endian(uint32_t x);
+    uint16_t swap_endian_16(uint16_t x);
+    uint32_t swap_endian_32(uint32_t x);
 public:
     Memory();
     Memory(uint64_t max_memory);
@@ -46,10 +47,12 @@ public:
     uint8_t *get_physical_addr(uint32_t virtual_addr);
 
     uint32_t read_word(uint32_t addr);
+    uint16_t read_short(uint32_t addr);
     uint8_t read_byte(uint32_t addr);
     void read_memory(uint32_t addr, void *buf, uint32_t len);
 
     void write_word(uint32_t addr, uint32_t word);
+    void write_short(uint32_t addr, uint16_t data);
     void write_byte(uint32_t addr, uint8_t data);
     void write_memory(uint32_t addr, void *buf, uint32_t len);
 };

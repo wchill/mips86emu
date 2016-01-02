@@ -32,9 +32,10 @@ int main(int argc, char *argv[]) {
     fread(buf, 1, static_cast<size_t>(file_size), file);
     cpu.get_cpu_memory()->write_memory(MEMORY_TEXT, buf, static_cast<uint32_t>(file_size));
     delete[] buf;
+    fclose(file);
 
     unsigned long long cycles = 0;
-    while(true) {
-        cpu.tick();
-    }
+    while(cpu.tick());
+
+    return 0;
 }
